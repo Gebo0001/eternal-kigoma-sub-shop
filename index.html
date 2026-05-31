@@ -4,13 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ETERNAL KIGOMA SUB SHOP</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;--accent:#7c6aff;--accent2:#ff6a9b;--accent3:#6affd4;--text:#e8e8f0;--muted:#6b6b8a;--gold:#ffd066}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
 .hidden{display:none!important}
-/* AUTH */
+.loading{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 20% 50%,#1a0a3d 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#0d2a1f 0%,transparent 50%),var(--bg);padding:20px}
 .auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:460px;box-shadow:0 40px 80px rgba(0,0,0,.5)}
 .auth-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
@@ -27,13 +30,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .row .field{flex:1;min-width:160px}
 .btn{width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:opacity .2s;margin-top:6px}
 .btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-sm{width:auto;padding:7px 14px;font-size:12px;border-radius:8px;margin-top:0;background:var(--accent)}
 .btn-danger{background:linear-gradient(135deg,#ff4444,#ff6a9b)}
 .btn-success{background:linear-gradient(135deg,#22c55e,var(--accent3));color:#000}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
 .err{color:var(--accent2);font-size:13px;margin-top:8px;text-align:center}
 .suc{color:var(--accent3);font-size:13px;margin-top:8px;text-align:center}
-/* LAYOUT */
 .layout{display:flex;min-height:100vh}
 .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sidebar-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:0 20px;margin-bottom:28px;line-height:1.3}
@@ -48,13 +51,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .user-chip .role{color:var(--gold);font-size:10px;text-transform:uppercase;letter-spacing:1px}
 .main{flex:1;padding:28px;overflow-y:auto}
 .page-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:20px}
-/* CARDS */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
 .card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .card-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
 .purple{color:var(--accent)}.pink{color:var(--accent2)}.green{color:var(--accent3)}.gold{color:var(--gold)}
-/* TABLE */
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;overflow-x:auto;margin-bottom:20px}
 .table-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .table-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
@@ -64,12 +65,10 @@ td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(42,42,61,.5)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
 .pv-tag{display:inline-block;padding:3px 10px;border-radius:20px;background:rgba(106,255,212,.1);color:var(--accent3);font-size:12px;font-weight:600}
-/* TREE */
 .tree-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;overflow-x:auto}
 .tree-node{margin-left:20px}
 .tree-node-root{margin-left:0}
-.node-card{display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin:5px 0;cursor:pointer;transition:all .2s}
-.node-card:hover{border-color:var(--accent)}
+.node-card{display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin:5px 0}
 .node-card.self{border-color:var(--accent);background:rgba(124,106,255,.1)}
 .node-card.admin-node{border-color:var(--gold);background:rgba(255,208,102,.05)}
 .node-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
@@ -79,20 +78,23 @@ tr:hover td{background:var(--surface2)}
 .tree-children{border-left:2px solid var(--border);margin-left:16px;padding-left:14px}
 .toggle-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--muted);margin-left:8px}
 .toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
-/* FORM */
 .pv-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px}
 .pv-form h3{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:14px}
 .info-box{padding:12px 16px;background:rgba(124,106,255,.1);border-radius:10px;font-size:13px;margin-top:12px}
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:14px}
-@media(max-width:700px){.sidebar{width:200px}.sidebar-logo{font-size:13px}.main{padding:16px}.cards{grid-template-columns:1fr 1fr}}
-@media(max-width:500px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:12px}.sidebar-logo{width:100%;margin-bottom:8px}.sidebar-bottom{display:none}.nav-item{padding:8px 12px;font-size:12px}.main{padding:12px}}
+@media(max-width:700px){.sidebar{width:200px}.main{padding:16px}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:12px}.sidebar-bottom{display:none}.nav-item{padding:8px 12px;font-size:12px}.main{padding:12px}}
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="auth-screen" class="auth-wrap">
+<div id="loading-screen" class="loading">
+  <div class="spinner"></div>
+  <div style="color:var(--muted);font-size:14px">Inapakia...</div>
+</div>
+
+<div id="auth-screen" class="auth-wrap hidden">
   <div class="auth-box">
     <div class="auth-logo">ETERNAL KIGOMA SUB SHOP</div>
     <div class="auth-sub">Digital Marketing Platform</div>
@@ -100,17 +102,13 @@ tr:hover td{background:var(--surface2)}
       <button class="tab active" onclick="switchTab('login')">Ingia</button>
       <button class="tab" onclick="switchTab('register')">Jisajili</button>
     </div>
-
-    <!-- LOGIN -->
     <div id="login-form">
       <div class="field"><label>Namba ya Mwanachama</label><input id="l-member" placeholder="Mfano: 1214387" /></div>
       <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="••••••••" /></div>
       <div id="l-err" class="err hidden"></div>
-      <button class="btn" onclick="doLogin()">Ingia</button>
+      <button class="btn" id="login-btn" onclick="doLogin()">Ingia</button>
       <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted)">Admin: Namba <strong>1214387</strong> / Password: <strong>admin123</strong></div>
     </div>
-
-    <!-- REGISTER -->
     <div id="register-form" class="hidden">
       <div class="row">
         <div class="field"><label>Jina Kamili</label><input id="r-name" placeholder="John Doe" /></div>
@@ -127,12 +125,11 @@ tr:hover td{background:var(--surface2)}
       </div>
       <div id="r-err" class="err hidden"></div>
       <div id="r-suc" class="suc hidden"></div>
-      <button class="btn" onclick="doRegister()">Jisajili</button>
+      <button class="btn" id="register-btn" onclick="doRegister()">Jisajili</button>
     </div>
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="app-screen" class="layout hidden">
   <div class="sidebar">
     <div class="sidebar-logo">ETERNAL KIGOMA SUB SHOP</div>
@@ -150,156 +147,258 @@ tr:hover td{background:var(--surface2)}
 </div>
 
 <script>
-// ============ DB ============
-const DB = {
-  getUsers:()=>JSON.parse(localStorage.getItem('mlm_users')||'[]'),
-  saveUsers:u=>localStorage.setItem('mlm_users',JSON.stringify(u)),
-  getCurrent:()=>JSON.parse(localStorage.getItem('mlm_current')||'null'),
-  setCurrent:u=>localStorage.setItem('mlm_current',JSON.stringify(u)),
-  logout:()=>localStorage.removeItem('mlm_current'),
-  getPV:()=>JSON.parse(localStorage.getItem('mlm_pv')||'[]'),
-  savePV:p=>localStorage.setItem('mlm_pv',JSON.stringify(p)),
-};
+// ============ SUPABASE SETUP ============
+const SUPA_URL = 'https://wrnlrceicubeafagmpjs.supabase.co';
+const SUPA_KEY = 'sb_publishable_fINfr0H44Dh0GNNW3Hh4WA_LlejHvrx';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 function genCode(name){return name.substring(0,3).toUpperCase()+Math.random().toString(36).substring(2,6).toUpperCase()}
 
-function initAdmin(){
-  const users=DB.getUsers();
-  if(!users.find(u=>u.role==='admin')){
-    DB.saveUsers([{id:'admin_001',fullName:'Mr. Gebo',memberNumber:'1214387',password:'admin123',phone:'0672949116',passport:'ADMIN001',code:'GEBO0001',sponsorCode:null,role:'admin',joinDate:new Date().toISOString()}]);
+// ============ DATABASE SETUP ============
+async function setupDB(){
+  // Create tables via SQL using RPC — we use REST API directly
+  // Tables: users, pv_records
+  // We'll check if admin exists, if not create
+  try {
+    const {data, error} = await sb.from('users').select('id').eq('role','admin').limit(1);
+    if(error && error.code === '42P01'){
+      // Table doesn't exist — show setup message
+      showSetupNeeded();
+      return false;
+    }
+    if(!data || data.length === 0){
+      // Create admin
+      await sb.from('users').insert({
+        full_name: 'Mr. Gebo',
+        member_number: '1214387',
+        password: 'admin123',
+        phone: '0672949116',
+        passport: 'ADMIN001',
+        code: 'GEBO0001',
+        sponsor_code: null,
+        role: 'admin'
+      });
+    }
+    return true;
+  } catch(e){
+    showSetupNeeded();
+    return false;
   }
 }
 
-function getDownline(userId,users){
-  const direct=users.filter(u=>{const s=users.find(s=>s.code===u.sponsorCode);return s&&s.id===userId});
-  let all=[...direct];
-  direct.forEach(d=>{all=[...all,...getDownline(d.id,users)]});
-  return all;
+function showSetupNeeded(){
+  document.getElementById('loading-screen').innerHTML = `
+    <div style="max-width:500px;padding:32px;text-align:center">
+      <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--accent);margin-bottom:16px">Hatua Moja Zaidi! ⚙️</div>
+      <div style="color:var(--muted);font-size:14px;margin-bottom:24px">Tunahitaji kuunda database tables kwanza. Nenda Supabase na fanya hivi:</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:left;margin-bottom:20px">
+        <div style="font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:700">1. Nenda: supabase.com/dashboard</div>
+        <div style="font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:700">2. Bonyeza project yako</div>
+        <div style="font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:700">3. Bonyeza "SQL Editor" upande wa kushoto</div>
+        <div style="font-size:12px;color:var(--accent);font-weight:700">4. Nakili SQL hapa chini, bandika, bonyeza "Run"</div>
+      </div>
+      <textarea id="sql-box" readonly style="width:100%;height:200px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:11px;padding:12px;font-family:monospace;resize:none">${getSQL()}</textarea>
+      <button class="btn" style="margin-top:12px" onclick="location.reload()">Nimemaliza - Endelea ✅</button>
+    </div>`;
 }
 
-function getUserPV(userId,pvRecords){
-  const recs=pvRecords.filter(p=>p.userId===userId);
-  const total=recs.reduce((s,p)=>s+p.amount,0);
-  const now=new Date();
-  const thisMonth=recs.filter(p=>{const d=new Date(p.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((s,p)=>s+p.amount,0);
-  return{total,thisMonth};
-}
+function getSQL(){
+  return `CREATE TABLE IF NOT EXISTS users (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  full_name text NOT NULL,
+  member_number text UNIQUE NOT NULL,
+  password text NOT NULL,
+  phone text,
+  passport text UNIQUE,
+  code text UNIQUE NOT NULL,
+  sponsor_code text,
+  role text DEFAULT 'member',
+  created_at timestamptz DEFAULT now()
+);
 
-function getTeamPV(userId,users,pvRecords){
-  const down=getDownline(userId,users);
-  const ids=[userId,...down.map(u=>u.id)];
-  const recs=pvRecords.filter(p=>ids.includes(p.userId));
-  const total=recs.reduce((s,p)=>s+p.amount,0);
-  const now=new Date();
-  const thisMonth=recs.filter(p=>{const d=new Date(p.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((s,p)=>s+p.amount,0);
-  return{total,thisMonth,memberCount:down.length};
+CREATE TABLE IF NOT EXISTS pv_records (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES users(id),
+  amount integer NOT NULL,
+  note text,
+  added_by text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE pv_records DISABLE ROW LEVEL SECURITY;
+
+INSERT INTO users (full_name,member_number,password,phone,passport,code,sponsor_code,role)
+VALUES ('Mr. Gebo','1214387','admin123','0672949116','ADMIN001','GEBO0001',NULL,'admin')
+ON CONFLICT (member_number) DO NOTHING;`;
 }
 
 // ============ AUTH ============
-let currentTab='login';
+let currentUser = null;
+
 function switchTab(tab){
-  currentTab=tab;
-  document.getElementById('login-form').classList.toggle('hidden',tab!=='login');
-  document.getElementById('register-form').classList.toggle('hidden',tab!=='register');
+  document.getElementById('login-form').classList.toggle('hidden', tab!=='login');
+  document.getElementById('register-form').classList.toggle('hidden', tab!=='register');
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
 }
 
-function show(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.remove('hidden')}
-function hide(id){document.getElementById(id).classList.add('hidden')}
+function showEl(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.remove('hidden')}
+function hideEl(id){document.getElementById(id).classList.add('hidden')}
 
-function doLogin(){
-  hide('l-err');
-  const member=document.getElementById('l-member').value.trim();
-  const pass=document.getElementById('l-pass').value;
-  const users=DB.getUsers();
-  const user=users.find(u=>u.memberNumber===member&&u.password===pass);
-  if(!user)return show('l-err','Namba ya Mwanachama au Password si sahihi');
-  DB.setCurrent(user);
-  loadApp(user);
+async function doLogin(){
+  hideEl('l-err');
+  const member = document.getElementById('l-member').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if(!member||!pass) return showEl('l-err','Jaza namba na password');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Inaingia...';
+  const {data, error} = await sb.from('users').select('*').eq('member_number', member).eq('password', pass).single();
+  btn.disabled = false; btn.textContent = 'Ingia';
+  if(error || !data) return showEl('l-err','Namba ya Mwanachama au Password si sahihi');
+  currentUser = data;
+  sessionStorage.setItem('mlm_user', JSON.stringify(data));
+  loadApp(data);
 }
 
-function doRegister(){
-  hide('r-err');hide('r-suc');
-  const name=document.getElementById('r-name').value.trim();
-  const member=document.getElementById('r-member').value.trim().toUpperCase();
-  const phone=document.getElementById('r-phone').value.trim();
-  const passport=document.getElementById('r-passport').value.trim().toUpperCase();
-  const sponsor=document.getElementById('r-sponsor').value.trim().toUpperCase();
-  const pass=document.getElementById('r-pass').value;
-  const pass2=document.getElementById('r-pass2').value;
-  if(!name||!member||!phone||!passport||!sponsor||!pass||!pass2)return show('r-err','Jaza sehemu zote');
-  if(pass!==pass2)return show('r-err','Password hazifanani');
-  if(pass.length<6)return show('r-err','Password iwe na herufi 6+');
-  const users=DB.getUsers();
-  if(users.find(u=>u.memberNumber===member))return show('r-err','Namba ya Mwanachama hii tayari ipo');
-  if(users.find(u=>u.passport===passport))return show('r-err','Namba ya Passport hii tayari ipo');
-  const sp=users.find(u=>u.code===sponsor);
-  if(!sp)return show('r-err','Code ya Sponsor si sahihi — angalia upya');
-  const newUser={id:'usr_'+Date.now(),fullName:name,memberNumber:member,phone,passport,password:pass,sponsorCode:sponsor,code:genCode(name),role:'member',joinDate:new Date().toISOString()};
-  DB.saveUsers([...users,newUser]);
-  show('r-suc',`Umesajiliwa! Ingia kwa Namba: ${member} ✅`);
+async function doRegister(){
+  hideEl('r-err'); hideEl('r-suc');
+  const name = document.getElementById('r-name').value.trim();
+  const member = document.getElementById('r-member').value.trim().toUpperCase();
+  const phone = document.getElementById('r-phone').value.trim();
+  const passport = document.getElementById('r-passport').value.trim().toUpperCase();
+  const sponsor = document.getElementById('r-sponsor').value.trim().toUpperCase();
+  const pass = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+  if(!name||!member||!phone||!passport||!sponsor||!pass||!pass2) return showEl('r-err','Jaza sehemu zote');
+  if(pass !== pass2) return showEl('r-err','Password hazifanani');
+  if(pass.length < 6) return showEl('r-err','Password iwe na herufi 6+');
+  const btn = document.getElementById('register-btn');
+  btn.disabled = true; btn.textContent = 'Inasajili...';
+  // Check sponsor exists
+  const {data: sp} = await sb.from('users').select('id,code').eq('code', sponsor).single();
+  if(!sp){btn.disabled=false;btn.textContent='Jisajili';return showEl('r-err','Code ya Sponsor si sahihi')}
+  // Check member number not taken
+  const {data: ex} = await sb.from('users').select('id').eq('member_number', member).single();
+  if(ex){btn.disabled=false;btn.textContent='Jisajili';return showEl('r-err','Namba ya Mwanachama hii tayari ipo')}
+  const {data: newUser, error} = await sb.from('users').insert({
+    full_name: name, member_number: member, phone, passport,
+    password: pass, sponsor_code: sponsor, code: genCode(name), role: 'member'
+  }).select().single();
+  btn.disabled = false; btn.textContent = 'Jisajili';
+  if(error) return showEl('r-err','Hitilafu: '+error.message);
+  showEl('r-suc', `Umesajiliwa! Ingia kwa Namba: ${member} ✅`);
   ['r-name','r-member','r-phone','r-passport','r-sponsor','r-pass','r-pass2'].forEach(id=>document.getElementById(id).value='');
 }
 
-function doLogout(){DB.logout();location.reload()}
+function doLogout(){
+  sessionStorage.removeItem('mlm_user');
+  currentUser = null;
+  location.reload();
+}
 
 // ============ APP ============
-let currentPage='dashboard';
-let currentUser=null;
+let currentPage = 'dashboard';
 
 function loadApp(user){
-  currentUser=user;
+  currentUser = user;
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
-  document.getElementById('sb-name').textContent=user.fullName;
-  document.getElementById('sb-code').textContent=user.code;
-  document.getElementById('sb-role').textContent=user.role==='admin'?'👑 Admin':'🔵 Member';
+  document.getElementById('sb-name').textContent = user.full_name;
+  document.getElementById('sb-code').textContent = user.code;
+  document.getElementById('sb-role').textContent = user.role==='admin' ? '👑 Admin' : '🔵 Member';
   buildNav();
   renderPage('dashboard');
 }
 
 function buildNav(){
-  const isAdmin=currentUser.role==='admin';
-  const navItems=isAdmin?[
+  const isAdmin = currentUser.role === 'admin';
+  const navs = isAdmin ? [
     {id:'dashboard',icon:'📊',label:'Dashboard'},
     {id:'network',icon:'🌐',label:'Network Yote'},
     {id:'members',icon:'👥',label:'Wanachama'},
     {id:'addpv',icon:'➕',label:'Ongeza PV'},
-  ]:[
+  ] : [
     {id:'dashboard',icon:'📊',label:'Dashboard'},
     {id:'team',icon:'🌳',label:'Team Yangu'},
   ];
-  document.getElementById('nav-items').innerHTML=navItems.map(n=>`<div class="nav-item ${n.id===currentPage?'active':''}" onclick="renderPage('${n.id}')" id="nav-${n.id}"><span class="nav-icon">${n.icon}</span>${n.label}</div>`).join('');
+  document.getElementById('nav-items').innerHTML = navs.map(n=>
+    `<div class="nav-item ${n.id===currentPage?'active':''}" onclick="renderPage('${n.id}')" id="nav-${n.id}"><span class="nav-icon">${n.icon}</span>${n.label}</div>`
+  ).join('');
 }
 
-function renderPage(page){
-  currentPage=page;
+async function renderPage(page){
+  currentPage = page;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const navEl=document.getElementById('nav-'+page);
-  if(navEl)navEl.classList.add('active');
-  const main=document.getElementById('main-content');
-  const users=DB.getUsers();
-  const pv=DB.getPV();
-  if(page==='dashboard')main.innerHTML=renderDashboard(users,pv);
-  else if(page==='team')main.innerHTML=renderTeam(users,pv);
-  else if(page==='network')main.innerHTML=renderNetwork(users,pv);
-  else if(page==='members')main.innerHTML=renderMembers(users,pv);
-  else if(page==='addpv')main.innerHTML=renderAddPV(users,pv);
+  const navEl = document.getElementById('nav-'+page);
+  if(navEl) navEl.classList.add('active');
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="empty">Inapakia...</div>';
+  if(page==='dashboard') await showDashboard();
+  else if(page==='team') await showTeam();
+  else if(page==='network') await showNetwork();
+  else if(page==='members') await showMembers();
+  else if(page==='addpv') await showAddPV();
+}
+
+// ============ DATA HELPERS ============
+async function getAllUsers(){
+  const {data} = await sb.from('users').select('*').order('created_at');
+  return data || [];
+}
+
+async function getAllPV(){
+  const {data} = await sb.from('pv_records').select('*').order('created_at');
+  return data || [];
+}
+
+function getDownline(userId, users){
+  const direct = users.filter(u => {
+    const sp = users.find(s => s.code === u.sponsor_code);
+    return sp && sp.id === userId;
+  });
+  let all = [...direct];
+  direct.forEach(d => { all = [...all, ...getDownline(d.id, users)]; });
+  return all;
+}
+
+function personalPV(userId, pvRecords){
+  const recs = pvRecords.filter(p => p.user_id === userId);
+  const total = recs.reduce((s,p) => s+p.amount, 0);
+  const now = new Date();
+  const thisMonth = recs.filter(p => {
+    const d = new Date(p.created_at);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).reduce((s,p) => s+p.amount, 0);
+  return {total, thisMonth};
+}
+
+function teamPV(userId, users, pvRecords){
+  const down = getDownline(userId, users);
+  const ids = [userId, ...down.map(u=>u.id)];
+  const recs = pvRecords.filter(p => ids.includes(p.user_id));
+  const total = recs.reduce((s,p) => s+p.amount, 0);
+  const now = new Date();
+  const thisMonth = recs.filter(p => {
+    const d = new Date(p.created_at);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).reduce((s,p) => s+p.amount, 0);
+  return {total, thisMonth, memberCount: down.length};
 }
 
 // ============ PAGES ============
-function renderDashboard(users,pvRecords){
-  const u=currentUser;
-  const personal=getUserPV(u.id,pvRecords);
-  const team=getTeamPV(u.id,users,pvRecords);
-  return `
+async function showDashboard(){
+  const [users, pvRecords] = await Promise.all([getAllUsers(), getAllPV()]);
+  const u = currentUser;
+  const pv = personalPV(u.id, pvRecords);
+  const team = teamPV(u.id, users, pvRecords);
+  document.getElementById('main-content').innerHTML = `
   <div class="page-title">Dashboard 📊</div>
-  <div class="section-label">PV Yangu Binafsi</div>
+  <div class="section-label" style="margin-bottom:8px">PV Yangu Binafsi</div>
   <div class="cards" style="margin-bottom:16px">
-    <div class="card"><div class="card-label">PV Yangu - Mwezi Huu</div><div class="card-value purple">${personal.thisMonth}</div></div>
-    <div class="card"><div class="card-label">Jumla ya PV Yangu</div><div class="card-value green">${personal.total}</div></div>
+    <div class="card"><div class="card-label">PV Yangu - Mwezi Huu</div><div class="card-value purple">${pv.thisMonth}</div></div>
+    <div class="card"><div class="card-label">Jumla ya PV Yangu</div><div class="card-value green">${pv.total}</div></div>
   </div>
-  <div class="section-label">PV ya Team Nzima (Wewe + Wanachama Wote)</div>
+  <div class="section-label" style="margin-bottom:8px">PV ya Team Nzima</div>
   <div class="cards" style="margin-bottom:24px">
     <div class="card"><div class="card-label">PV ya Team - Mwezi Huu</div><div class="card-value gold">${team.thisMonth}</div></div>
     <div class="card"><div class="card-label">Jumla ya PV ya Team</div><div class="card-value pink">${team.total}</div></div>
@@ -308,102 +407,108 @@ function renderDashboard(users,pvRecords){
   <div class="pv-form">
     <h3>📋 Taarifa Zangu</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Jina Kamili</div><div style="font-weight:600">${u.fullName}</div></div>
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Namba ya Mwanachama</div><div style="font-weight:600;color:var(--gold)">${u.memberNumber}</div></div>
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Code Yangu (Wape Wengine)</div><div style="font-weight:600;color:var(--accent)">${u.code}</div></div>
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Namba ya Simu</div><div style="font-weight:600">${u.phone}</div></div>
-      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Passport</div><div style="font-weight:600">${u.passport}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Jina Kamili</div><div style="font-weight:600">${u.full_name}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Namba ya Mwanachama</div><div style="font-weight:600;color:var(--gold)">${u.member_number}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Code Yangu</div><div style="font-weight:600;color:var(--accent)">${u.code}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Simu</div><div style="font-weight:600">${u.phone||'—'}</div></div>
     </div>
-    <div class="info-box">💡 <strong>Code yako ni: ${u.code}</strong> — Wape watu wanaotaka kujiunga chini yako</div>
+    <div class="info-box">💡 <strong>Code yako: ${u.code}</strong> — Wape watu wanaotaka kujiunga chini yako</div>
   </div>`;
 }
 
-function buildTreeHTML(userId,users,pvRecords,depth=0){
-  const user=users.find(u=>u.id===userId);
-  if(!user)return'';
-  const pv=getUserPV(userId,pvRecords);
-  const team=getTeamPV(userId,users,pvRecords);
-  const children=users.filter(u=>{const s=users.find(s=>s.code===u.sponsorCode);return s&&s.id===userId});
-  const initials=user.fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-  const isSelf=userId===currentUser.id;
-  const isAdmin=user.role==='admin';
-  const nodeClass=`node-card${isSelf?' self':''}${isAdmin?' admin-node':''}`;
-  const childrenHTML=children.length?`<div class="tree-children" id="ch-${userId}">${children.map(c=>buildTreeHTML(c.id,users,pvRecords,depth+1)).join('')}</div>`:'';
-  const toggleBtn=children.length?`<button class="toggle-btn" onclick="toggleNode('${userId}')">${depth<2?'▲ Ficha':'▼ Ona ('+children.length+')'}</button>`:'';
-  return`<div class="${depth===0?'tree-node-root':'tree-node'}">
+function buildTreeHTML(user, users, pvRecords, depth=0){
+  const pv = personalPV(user.id, pvRecords);
+  const team = teamPV(user.id, users, pvRecords);
+  const children = users.filter(u => {
+    const sp = users.find(s => s.code === u.sponsor_code);
+    return sp && sp.id === user.id;
+  });
+  const initials = user.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  const isSelf = user.id === currentUser.id;
+  const isAdmin = user.role === 'admin';
+  const cardClass = `node-card${isSelf?' self':''}${isAdmin?' admin-node':''}`;
+  const childrenHTML = children.length ? `<div class="tree-children" id="ch-${user.id}">${children.map(c=>buildTreeHTML(c,users,pvRecords,depth+1)).join('')}</div>` : '';
+  const toggleBtn = children.length ? `<button class="toggle-btn" onclick="toggleNode('${user.id}')">${depth<2?'▲ Ficha':'▼ Ona ('+children.length+')'}</button>` : '';
+  const hiddenClass = depth >= 2 ? 'hidden' : '';
+  return `<div class="${depth===0?'tree-node-root':'tree-node'}">
     <div style="display:flex;align-items:center">
-      <div class="${nodeClass}">
+      <div class="${cardClass}">
         <div class="node-avatar">${initials}</div>
         <div>
-          <div class="node-name">${user.fullName}${isSelf?' 👤':''}${isAdmin?' 👑':''}</div>
-          <div class="node-code">NAMBA: ${user.memberNumber} | CODE: ${user.code}</div>
-          <div class="node-pv">PV Binafsi (Mwezi): <strong style="color:#7c6aff">${pv.thisMonth}</strong> | Jumla: <strong style="color:#6affd4">${pv.total}</strong></div>
-          <div class="node-pv">PV Team (Mwezi): <strong style="color:#ffd066">${team.thisMonth}</strong> | Jumla: <strong style="color:#ff6a9b">${team.total}</strong> | Wanachama: <strong style="color:#fff">${team.memberCount}</strong></div>
+          <div class="node-name">${user.full_name}${isSelf?' 👤':''}${isAdmin?' 👑':''}</div>
+          <div class="node-code">NAMBA: ${user.member_number} | CODE: ${user.code}</div>
+          <div class="node-pv">PV Binafsi: Mwezi <strong style="color:#7c6aff">${pv.thisMonth}</strong> | Jumla <strong style="color:#6affd4">${pv.total}</strong></div>
+          <div class="node-pv">PV Team: Mwezi <strong style="color:#ffd066">${team.thisMonth}</strong> | Jumla <strong style="color:#ff6a9b">${team.total}</strong> | Wanachama <strong style="color:#fff">${team.memberCount}</strong></div>
         </div>
       </div>${toggleBtn}
     </div>
-    ${children.length&&depth>=2?`<div class="tree-children hidden" id="ch-${userId}">${children.map(c=>buildTreeHTML(c.id,users,pvRecords,depth+1)).join('')}</div>`:childrenHTML}
+    ${children.length ? `<div class="tree-children ${hiddenClass}" id="ch-${user.id}">${children.map(c=>buildTreeHTML(c,users,pvRecords,depth+1)).join('')}</div>` : ''}
   </div>`;
 }
 
 function toggleNode(id){
-  const el=document.getElementById('ch-'+id);
-  if(!el)return;
-  el.classList.toggle('hidden');
+  const el = document.getElementById('ch-'+id);
+  if(el) el.classList.toggle('hidden');
 }
 
-function renderTeam(users,pvRecords){
-  return`<div class="page-title">Team Yangu 🌳</div><div class="tree-wrap">${buildTreeHTML(currentUser.id,users,pvRecords)}</div>`;
+async function showTeam(){
+  const [users, pvRecords] = await Promise.all([getAllUsers(), getAllPV()]);
+  const me = users.find(u => u.id === currentUser.id);
+  document.getElementById('main-content').innerHTML = `<div class="page-title">Team Yangu 🌳</div><div class="tree-wrap">${buildTreeHTML(me, users, pvRecords)}</div>`;
 }
 
-function renderNetwork(users,pvRecords){
-  const admin=users.find(u=>u.role==='admin');
-  if(!admin)return'<div class="empty">Hakuna data</div>';
-  return`<div class="page-title">Network Yote 🌐</div><div class="tree-wrap">${buildTreeHTML(admin.id,users,pvRecords)}</div>`;
+async function showNetwork(){
+  const [users, pvRecords] = await Promise.all([getAllUsers(), getAllPV()]);
+  const admin = users.find(u => u.role === 'admin');
+  document.getElementById('main-content').innerHTML = `<div class="page-title">Network Yote 🌐</div><div class="tree-wrap">${admin ? buildTreeHTML(admin, users, pvRecords) : '<div class="empty">Hakuna data</div>'}</div>`;
 }
 
-function renderMembers(users,pvRecords){
-  const members=users.filter(u=>u.role!=='admin');
-  const rows=members.map(m=>{
-    const pv=getUserPV(m.id,pvRecords);
-    const team=getTeamPV(m.id,users,pvRecords);
-    const sp=users.find(u=>u.code===m.sponsorCode);
-    return`<tr>
-      <td>${m.fullName}</td>
-      <td><span style="color:var(--gold);font-weight:600">${m.memberNumber}</span></td>
+async function showMembers(){
+  const [users, pvRecords] = await Promise.all([getAllUsers(), getAllPV()]);
+  const members = users.filter(u => u.role !== 'admin');
+  const rows = members.map(m => {
+    const pv = personalPV(m.id, pvRecords);
+    const team = teamPV(m.id, users, pvRecords);
+    const sp = users.find(u => u.code === m.sponsor_code);
+    return `<tr>
+      <td>${m.full_name}</td>
+      <td><span style="color:var(--gold);font-weight:600">${m.member_number}</span></td>
       <td><span style="color:var(--accent);font-weight:600">${m.code}</span></td>
-      <td>${m.phone}</td>
-      <td>${m.passport}</td>
-      <td>${sp?sp.fullName:'—'}</td>
+      <td>${m.phone||'—'}</td>
+      <td>${m.passport||'—'}</td>
+      <td>${sp ? sp.full_name : '—'}</td>
       <td><span class="pv-tag">${pv.thisMonth}</span></td>
       <td><span class="pv-tag">${pv.total}</span></td>
       <td><span class="pv-tag" style="background:rgba(255,208,102,.1);color:var(--gold)">${team.total}</span></td>
       <td><button class="btn btn-danger btn-sm" onclick="removeMember('${m.id}')">Futa</button></td>
     </tr>`;
   }).join('');
-  return`<div class="page-title">Wanachama Wote 👥</div>
+  document.getElementById('main-content').innerHTML = `
+  <div class="page-title">Wanachama Wote 👥</div>
   <div id="mem-msg"></div>
   <div class="table-wrap">
     <div class="table-head"><div class="table-title">Wanachama (${members.length})</div></div>
-    ${members.length===0?'<div class="empty">Hakuna wanachama bado</div>':`<table><thead><tr><th>Jina</th><th>Namba</th><th>Code</th><th>Simu</th><th>Passport</th><th>Sponsor</th><th>PV Mwezi</th><th>PV Jumla</th><th>PV Team</th><th>Hatua</th></tr></thead><tbody>${rows}</tbody></table>`}
+    ${members.length===0 ? '<div class="empty">Hakuna wanachama bado</div>' : `<table><thead><tr><th>Jina</th><th>Namba</th><th>Code</th><th>Simu</th><th>Passport</th><th>Sponsor</th><th>PV Mwezi</th><th>PV Jumla</th><th>PV Team</th><th>Hatua</th></tr></thead><tbody>${rows}</tbody></table>`}
   </div>`;
 }
 
-function removeMember(id){
-  if(!confirm('Una uhakika unataka kumfuta mwanachama huyu?'))return;
-  DB.saveUsers(DB.getUsers().filter(u=>u.id!==id));
-  DB.savePV(DB.getPV().filter(p=>p.userId!==id));
-  renderPage('members');
+async function removeMember(id){
+  if(!confirm('Una uhakika unataka kumfuta mwanachama huyu?')) return;
+  await sb.from('pv_records').delete().eq('user_id', id);
+  await sb.from('users').delete().eq('id', id);
+  await showMembers();
 }
 
-function renderAddPV(users,pvRecords){
-  const members=users.filter(u=>u.role!=='admin');
-  const opts=members.map(m=>`<option value="${m.id}">${m.fullName} (${m.memberNumber})</option>`).join('');
-  const history=[...pvRecords].reverse().map(r=>{
-    const u=users.find(u=>u.id===r.userId);
-    return`<tr><td>${u?u.fullName:'—'}</td><td><span class="pv-tag">+${r.amount}</span></td><td>${r.note}</td><td>${new Date(r.date).toLocaleDateString('sw-TZ')}</td></tr>`;
+async function showAddPV(){
+  const [users, pvRecords] = await Promise.all([getAllUsers(), getAllPV()]);
+  const members = users.filter(u => u.role !== 'admin');
+  const opts = members.map(m => `<option value="${m.id}">${m.full_name} (${m.member_number})</option>`).join('');
+  const history = [...pvRecords].reverse().map(r => {
+    const u = users.find(u => u.id === r.user_id);
+    return `<tr><td>${u ? u.full_name : '—'}</td><td><span class="pv-tag">+${r.amount}</span></td><td>${r.note||'—'}</td><td>${new Date(r.created_at).toLocaleDateString('sw-TZ')}</td></tr>`;
   }).join('');
-  return`<div class="page-title">Ongeza PV ➕</div>
+  document.getElementById('main-content').innerHTML = `
+  <div class="page-title">Ongeza PV ➕</div>
   <div class="pv-form">
     <h3>Jaza PV kwa Mwanachama</h3>
     <div class="row">
@@ -411,37 +516,50 @@ function renderAddPV(users,pvRecords){
       <div class="field"><label>Kiasi cha PV</label><input id="pv-amount" type="number" placeholder="Mfano: 100" /></div>
     </div>
     <div class="field"><label>Maelezo (Optional)</label><input id="pv-note" placeholder="Mfano: Mauzo ya Cream" /></div>
-    <div id="pv-preview" style="margin-bottom:10px"></div>
     <div id="pv-err" class="err hidden"></div>
     <div id="pv-suc" class="suc hidden"></div>
     <button class="btn btn-success" style="width:auto;padding:11px 28px" onclick="addPV()">Ongeza PV ✅</button>
   </div>
   <div class="table-wrap">
     <div class="table-head"><div class="table-title">Historia ya PV</div></div>
-    ${pvRecords.length===0?'<div class="empty">Hakuna rekodi bado</div>':`<table><thead><tr><th>Mwanachama</th><th>PV</th><th>Maelezo</th><th>Tarehe</th></tr></thead><tbody>${history}</tbody></table>`}
+    ${pvRecords.length===0 ? '<div class="empty">Hakuna rekodi bado</div>' : `<table><thead><tr><th>Mwanachama</th><th>PV</th><th>Maelezo</th><th>Tarehe</th></tr></thead><tbody>${history}</tbody></table>`}
   </div>`;
 }
 
-function addPV(){
-  hide('pv-err');hide('pv-suc');
-  const userId=document.getElementById('pv-user').value;
-  const amount=Number(document.getElementById('pv-amount').value);
-  const note=document.getElementById('pv-note').value||'PV ya mauzo';
-  if(!userId)return show('pv-err','Chagua mwanachama');
-  if(!amount||amount<=0)return show('pv-err','Weka PV sahihi');
-  const rec={id:Date.now().toString(),userId,amount,note,date:new Date().toISOString(),addedBy:'admin'};
-  DB.savePV([...DB.getPV(),rec]);
-  show('pv-suc',`PV ${amount} imeongezwa kwa mafanikio! ✅`);
-  document.getElementById('pv-amount').value='';
-  document.getElementById('pv-note').value='';
-  document.getElementById('pv-user').value='';
-  setTimeout(()=>renderPage('addpv'),1500);
+async function addPV(){
+  hideEl('pv-err'); hideEl('pv-suc');
+  const userId = document.getElementById('pv-user').value;
+  const amount = Number(document.getElementById('pv-amount').value);
+  const note = document.getElementById('pv-note').value || 'PV ya mauzo';
+  if(!userId) return showEl('pv-err','Chagua mwanachama');
+  if(!amount||amount<=0) return showEl('pv-err','Weka PV sahihi');
+  const {error} = await sb.from('pv_records').insert({user_id: userId, amount, note, added_by: 'admin'});
+  if(error) return showEl('pv-err','Hitilafu: '+error.message);
+  showEl('pv-suc', `PV ${amount} imeongezwa! ✅`);
+  document.getElementById('pv-amount').value = '';
+  document.getElementById('pv-note').value = '';
+  document.getElementById('pv-user').value = '';
+  setTimeout(() => showAddPV(), 1500);
 }
 
 // ============ INIT ============
-initAdmin();
-const saved=DB.getCurrent();
-if(saved)loadApp(saved);
+async function init(){
+  const saved = sessionStorage.getItem('mlm_user');
+  const ok = await setupDB();
+  if(!ok) return;
+  document.getElementById('loading-screen').classList.add('hidden');
+  if(saved){
+    currentUser = JSON.parse(saved);
+    // Refresh user data from DB
+    const {data} = await sb.from('users').select('*').eq('id', currentUser.id).single();
+    if(data){ currentUser = data; sessionStorage.setItem('mlm_user', JSON.stringify(data)); loadApp(data); }
+    else { document.getElementById('auth-screen').classList.remove('hidden'); }
+  } else {
+    document.getElementById('auth-screen').classList.remove('hidden');
+  }
+}
+
+init();
 </script>
 </body>
 </html>

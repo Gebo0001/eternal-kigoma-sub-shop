@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETERNAL KIGOMA SUB SHOP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;--accent:#7c6aff;--accent2:#ff6a9b;--accent3:#6affd4;--text:#e8e8f0;--muted:#6b6b8a;--gold:#ffd066}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+.hidden{display:none!important}
+/* AUTH */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 20% 50%,#1a0a3d 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#0d2a1f 0%,transparent 50%),var(--bg);padding:20px}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:460px;box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.auth-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.auth-sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:24px}
+.tab{flex:1;padding:10px;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;background:transparent;color:var(--muted);transition:all .2s}
+.tab.active{background:var(--accent);color:#fff}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;transition:border .2s;outline:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select option{background:var(--surface2)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row .field{flex:1;min-width:160px}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:opacity .2s;margin-top:6px}
+.btn:hover{opacity:.88}
+.btn-sm{width:auto;padding:7px 14px;font-size:12px;border-radius:8px;margin-top:0;background:var(--accent)}
+.btn-danger{background:linear-gradient(135deg,#ff4444,#ff6a9b)}
+.btn-success{background:linear-gradient(135deg,#22c55e,var(--accent3));color:#000}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.err{color:var(--accent2);font-size:13px;margin-top:8px;text-align:center}
+.suc{color:var(--accent3);font-size:13px;margin-top:8px;text-align:center}
+/* LAYOUT */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:0 20px;margin-bottom:28px;line-height:1.3}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(124,106,255,.08)}
+.nav-icon{font-size:16px;width:22px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding:0 16px}
+.user-chip{background:var(--surface2);border-radius:12px;padding:12px;font-size:13px;margin-bottom:10px}
+.user-chip .name{font-weight:600;color:var(--text)}
+.user-chip .code{color:var(--accent);font-size:11px;margin-top:2px}
+.user-chip .role{color:var(--gold);font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.main{flex:1;padding:28px;overflow-y:auto}
+.page-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:20px}
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
+.card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.card-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+.purple{color:var(--accent)}.pink{color:var(--accent2)}.green{color:var(--accent3)}.gold{color:var(--gold)}
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;overflow-x:auto;margin-bottom:20px}
+.table-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.table-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th{padding:10px 16px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(42,42,61,.5)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.pv-tag{display:inline-block;padding:3px 10px;border-radius:20px;background:rgba(106,255,212,.1);color:var(--accent3);font-size:12px;font-weight:600}
+/* TREE */
+.tree-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;overflow-x:auto}
+.tree-node{margin-left:20px}
+.tree-node-root{margin-left:0}
+.node-card{display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin:5px 0;cursor:pointer;transition:all .2s}
+.node-card:hover{border-color:var(--accent)}
+.node-card.self{border-color:var(--accent);background:rgba(124,106,255,.1)}
+.node-card.admin-node{border-color:var(--gold);background:rgba(255,208,102,.05)}
+.node-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.node-name{font-weight:600;font-size:13px}
+.node-code{font-size:11px;color:var(--accent)}
+.node-pv{font-size:11px;color:var(--muted);margin-top:2px}
+.tree-children{border-left:2px solid var(--border);margin-left:16px;padding-left:14px}
+.toggle-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--muted);margin-left:8px}
+.toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* FORM */
+.pv-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px}
+.pv-form h3{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:14px}
+.info-box{padding:12px 16px;background:rgba(124,106,255,.1);border-radius:10px;font-size:13px;margin-top:12px}
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:14px}
+@media(max-width:700px){.sidebar{width:200px}.sidebar-logo{font-size:13px}.main{padding:16px}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:12px}.sidebar-logo{width:100%;margin-bottom:8px}.sidebar-bottom{display:none}.nav-item{padding:8px 12px;font-size:12px}.main{padding:12px}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen" class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">ETERNAL KIGOMA SUB SHOP</div>
+    <div class="auth-sub">Digital Marketing Platform</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Ingia</button>
+      <button class="tab" onclick="switchTab('register')">Jisajili</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="field"><label>Namba ya Mwanachama</label><input id="l-member" placeholder="Mfano: 1214387" /></div>
+      <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="••••••••" /></div>
+      <div id="l-err" class="err hidden"></div>
+      <button class="btn" onclick="doLogin()">Ingia</button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted)">Admin: Namba <strong>1214387</strong> / Password: <strong>admin123</strong></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-form" class="hidden">
+      <div class="row">
+        <div class="field"><label>Jina Kamili</label><input id="r-name" placeholder="John Doe" /></div>
+        <div class="field"><label>Namba ya Mwanachama</label><input id="r-member" placeholder="MEM001" /></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Namba ya Simu</label><input id="r-phone" placeholder="0700000000" /></div>
+        <div class="field"><label>Namba ya Passport</label><input id="r-passport" placeholder="A1234567" /></div>
+      </div>
+      <div class="field"><label>Code ya Sponsor (aliyekuleta)</label><input id="r-sponsor" placeholder="Mfano: GEBO0001" /></div>
+      <div class="row">
+        <div class="field"><label>Password</label><input id="r-pass" type="password" placeholder="••••••••" /></div>
+        <div class="field"><label>Thibitisha Password</label><input id="r-pass2" type="password" placeholder="••••••••" /></div>
+      </div>
+      <div id="r-err" class="err hidden"></div>
+      <div id="r-suc" class="suc hidden"></div>
+      <button class="btn" onclick="doRegister()">Jisajili</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app-screen" class="layout hidden">
+  <div class="sidebar">
+    <div class="sidebar-logo">ETERNAL KIGOMA SUB SHOP</div>
+    <div id="nav-items"></div>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="name" id="sb-name"></div>
+        <div class="code" id="sb-code"></div>
+        <div class="role" id="sb-role"></div>
+      </div>
+      <button class="btn btn-outline" style="width:100%;padding:9px;font-size:13px" onclick="doLogout()">Toka ↗</button>
+    </div>
+  </div>
+  <div class="main" id="main-content"></div>
+</div>
+
+<script>
+// ============ DB ============
+const DB = {
+  getUsers:()=>JSON.parse(localStorage.getItem('mlm_users')||'[]'),
+  saveUsers:u=>localStorage.setItem('mlm_users',JSON.stringify(u)),
+  getCurrent:()=>JSON.parse(localStorage.getItem('mlm_current')||'null'),
+  setCurrent:u=>localStorage.setItem('mlm_current',JSON.stringify(u)),
+  logout:()=>localStorage.removeItem('mlm_current'),
+  getPV:()=>JSON.parse(localStorage.getItem('mlm_pv')||'[]'),
+  savePV:p=>localStorage.setItem('mlm_pv',JSON.stringify(p)),
+};
+
+function genCode(name){return name.substring(0,3).toUpperCase()+Math.random().toString(36).substring(2,6).toUpperCase()}
+
+function initAdmin(){
+  const users=DB.getUsers();
+  if(!users.find(u=>u.role==='admin')){
+    DB.saveUsers([{id:'admin_001',fullName:'Mr. Gebo',memberNumber:'1214387',password:'admin123',phone:'0672949116',passport:'ADMIN001',code:'GEBO0001',sponsorCode:null,role:'admin',joinDate:new Date().toISOString()}]);
+  }
+}
+
+function getDownline(userId,users){
+  const direct=users.filter(u=>{const s=users.find(s=>s.code===u.sponsorCode);return s&&s.id===userId});
+  let all=[...direct];
+  direct.forEach(d=>{all=[...all,...getDownline(d.id,users)]});
+  return all;
+}
+
+function getUserPV(userId,pvRecords){
+  const recs=pvRecords.filter(p=>p.userId===userId);
+  const total=recs.reduce((s,p)=>s+p.amount,0);
+  const now=new Date();
+  const thisMonth=recs.filter(p=>{const d=new Date(p.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((s,p)=>s+p.amount,0);
+  return{total,thisMonth};
+}
+
+function getTeamPV(userId,users,pvRecords){
+  const down=getDownline(userId,users);
+  const ids=[userId,...down.map(u=>u.id)];
+  const recs=pvRecords.filter(p=>ids.includes(p.userId));
+  const total=recs.reduce((s,p)=>s+p.amount,0);
+  const now=new Date();
+  const thisMonth=recs.filter(p=>{const d=new Date(p.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((s,p)=>s+p.amount,0);
+  return{total,thisMonth,memberCount:down.length};
+}
+
+// ============ AUTH ============
+let currentTab='login';
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('login-form').classList.toggle('hidden',tab!=='login');
+  document.getElementById('register-form').classList.toggle('hidden',tab!=='register');
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+}
+
+function show(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.remove('hidden')}
+function hide(id){document.getElementById(id).classList.add('hidden')}
+
+function doLogin(){
+  hide('l-err');
+  const member=document.getElementById('l-member').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  const users=DB.getUsers();
+  const user=users.find(u=>u.memberNumber===member&&u.password===pass);
+  if(!user)return show('l-err','Namba ya Mwanachama au Password si sahihi');
+  DB.setCurrent(user);
+  loadApp(user);
+}
+
+function doRegister(){
+  hide('r-err');hide('r-suc');
+  const name=document.getElementById('r-name').value.trim();
+  const member=document.getElementById('r-member').value.trim().toUpperCase();
+  const phone=document.getElementById('r-phone').value.trim();
+  const passport=document.getElementById('r-passport').value.trim().toUpperCase();
+  const sponsor=document.getElementById('r-sponsor').value.trim().toUpperCase();
+  const pass=document.getElementById('r-pass').value;
+  const pass2=document.getElementById('r-pass2').value;
+  if(!name||!member||!phone||!passport||!sponsor||!pass||!pass2)return show('r-err','Jaza sehemu zote');
+  if(pass!==pass2)return show('r-err','Password hazifanani');
+  if(pass.length<6)return show('r-err','Password iwe na herufi 6+');
+  const users=DB.getUsers();
+  if(users.find(u=>u.memberNumber===member))return show('r-err','Namba ya Mwanachama hii tayari ipo');
+  if(users.find(u=>u.passport===passport))return show('r-err','Namba ya Passport hii tayari ipo');
+  const sp=users.find(u=>u.code===sponsor);
+  if(!sp)return show('r-err','Code ya Sponsor si sahihi — angalia upya');
+  const newUser={id:'usr_'+Date.now(),fullName:name,memberNumber:member,phone,passport,password:pass,sponsorCode:sponsor,code:genCode(name),role:'member',joinDate:new Date().toISOString()};
+  DB.saveUsers([...users,newUser]);
+  show('r-suc',`Umesajiliwa! Ingia kwa Namba: ${member} ✅`);
+  ['r-name','r-member','r-phone','r-passport','r-sponsor','r-pass','r-pass2'].forEach(id=>document.getElementById(id).value='');
+}
+
+function doLogout(){DB.logout();location.reload()}
+
+// ============ APP ============
+let currentPage='dashboard';
+let currentUser=null;
+
+function loadApp(user){
+  currentUser=user;
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('sb-name').textContent=user.fullName;
+  document.getElementById('sb-code').textContent=user.code;
+  document.getElementById('sb-role').textContent=user.role==='admin'?'👑 Admin':'🔵 Member';
+  buildNav();
+  renderPage('dashboard');
+}
+
+function buildNav(){
+  const isAdmin=currentUser.role==='admin';
+  const navItems=isAdmin?[
+    {id:'dashboard',icon:'📊',label:'Dashboard'},
+    {id:'network',icon:'🌐',label:'Network Yote'},
+    {id:'members',icon:'👥',label:'Wanachama'},
+    {id:'addpv',icon:'➕',label:'Ongeza PV'},
+  ]:[
+    {id:'dashboard',icon:'📊',label:'Dashboard'},
+    {id:'team',icon:'🌳',label:'Team Yangu'},
+  ];
+  document.getElementById('nav-items').innerHTML=navItems.map(n=>`<div class="nav-item ${n.id===currentPage?'active':''}" onclick="renderPage('${n.id}')" id="nav-${n.id}"><span class="nav-icon">${n.icon}</span>${n.label}</div>`).join('');
+}
+
+function renderPage(page){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navEl=document.getElementById('nav-'+page);
+  if(navEl)navEl.classList.add('active');
+  const main=document.getElementById('main-content');
+  const users=DB.getUsers();
+  const pv=DB.getPV();
+  if(page==='dashboard')main.innerHTML=renderDashboard(users,pv);
+  else if(page==='team')main.innerHTML=renderTeam(users,pv);
+  else if(page==='network')main.innerHTML=renderNetwork(users,pv);
+  else if(page==='members')main.innerHTML=renderMembers(users,pv);
+  else if(page==='addpv')main.innerHTML=renderAddPV(users,pv);
+}
+
+// ============ PAGES ============
+function renderDashboard(users,pvRecords){
+  const u=currentUser;
+  const personal=getUserPV(u.id,pvRecords);
+  const team=getTeamPV(u.id,users,pvRecords);
+  return `
+  <div class="page-title">Dashboard 📊</div>
+  <div class="section-label">PV Yangu Binafsi</div>
+  <div class="cards" style="margin-bottom:16px">
+    <div class="card"><div class="card-label">PV Yangu - Mwezi Huu</div><div class="card-value purple">${personal.thisMonth}</div></div>
+    <div class="card"><div class="card-label">Jumla ya PV Yangu</div><div class="card-value green">${personal.total}</div></div>
+  </div>
+  <div class="section-label">PV ya Team Nzima (Wewe + Wanachama Wote)</div>
+  <div class="cards" style="margin-bottom:24px">
+    <div class="card"><div class="card-label">PV ya Team - Mwezi Huu</div><div class="card-value gold">${team.thisMonth}</div></div>
+    <div class="card"><div class="card-label">Jumla ya PV ya Team</div><div class="card-value pink">${team.total}</div></div>
+    <div class="card"><div class="card-label">Wanachama wa Team</div><div class="card-value purple">${team.memberCount}</div></div>
+  </div>
+  <div class="pv-form">
+    <h3>📋 Taarifa Zangu</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Jina Kamili</div><div style="font-weight:600">${u.fullName}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Namba ya Mwanachama</div><div style="font-weight:600;color:var(--gold)">${u.memberNumber}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Code Yangu (Wape Wengine)</div><div style="font-weight:600;color:var(--accent)">${u.code}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Namba ya Simu</div><div style="font-weight:600">${u.phone}</div></div>
+      <div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Passport</div><div style="font-weight:600">${u.passport}</div></div>
+    </div>
+    <div class="info-box">💡 <strong>Code yako ni: ${u.code}</strong> — Wape watu wanaotaka kujiunga chini yako</div>
+  </div>`;
+}
+
+function buildTreeHTML(userId,users,pvRecords,depth=0){
+  const user=users.find(u=>u.id===userId);
+  if(!user)return'';
+  const pv=getUserPV(userId,pvRecords);
+  const team=getTeamPV(userId,users,pvRecords);
+  const children=users.filter(u=>{const s=users.find(s=>s.code===u.sponsorCode);return s&&s.id===userId});
+  const initials=user.fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  const isSelf=userId===currentUser.id;
+  const isAdmin=user.role==='admin';
+  const nodeClass=`node-card${isSelf?' self':''}${isAdmin?' admin-node':''}`;
+  const childrenHTML=children.length?`<div class="tree-children" id="ch-${userId}">${children.map(c=>buildTreeHTML(c.id,users,pvRecords,depth+1)).join('')}</div>`:'';
+  const toggleBtn=children.length?`<button class="toggle-btn" onclick="toggleNode('${userId}')">${depth<2?'▲ Ficha':'▼ Ona ('+children.length+')'}</button>`:'';
+  return`<div class="${depth===0?'tree-node-root':'tree-node'}">
+    <div style="display:flex;align-items:center">
+      <div class="${nodeClass}">
+        <div class="node-avatar">${initials}</div>
+        <div>
+          <div class="node-name">${user.fullName}${isSelf?' 👤':''}${isAdmin?' 👑':''}</div>
+          <div class="node-code">NAMBA: ${user.memberNumber} | CODE: ${user.code}</div>
+          <div class="node-pv">PV Binafsi (Mwezi): <strong style="color:#7c6aff">${pv.thisMonth}</strong> | Jumla: <strong style="color:#6affd4">${pv.total}</strong></div>
+          <div class="node-pv">PV Team (Mwezi): <strong style="color:#ffd066">${team.thisMonth}</strong> | Jumla: <strong style="color:#ff6a9b">${team.total}</strong> | Wanachama: <strong style="color:#fff">${team.memberCount}</strong></div>
+        </div>
+      </div>${toggleBtn}
+    </div>
+    ${children.length&&depth>=2?`<div class="tree-children hidden" id="ch-${userId}">${children.map(c=>buildTreeHTML(c.id,users,pvRecords,depth+1)).join('')}</div>`:childrenHTML}
+  </div>`;
+}
+
+function toggleNode(id){
+  const el=document.getElementById('ch-'+id);
+  if(!el)return;
+  el.classList.toggle('hidden');
+}
+
+function renderTeam(users,pvRecords){
+  return`<div class="page-title">Team Yangu 🌳</div><div class="tree-wrap">${buildTreeHTML(currentUser.id,users,pvRecords)}</div>`;
+}
+
+function renderNetwork(users,pvRecords){
+  const admin=users.find(u=>u.role==='admin');
+  if(!admin)return'<div class="empty">Hakuna data</div>';
+  return`<div class="page-title">Network Yote 🌐</div><div class="tree-wrap">${buildTreeHTML(admin.id,users,pvRecords)}</div>`;
+}
+
+function renderMembers(users,pvRecords){
+  const members=users.filter(u=>u.role!=='admin');
+  const rows=members.map(m=>{
+    const pv=getUserPV(m.id,pvRecords);
+    const team=getTeamPV(m.id,users,pvRecords);
+    const sp=users.find(u=>u.code===m.sponsorCode);
+    return`<tr>
+      <td>${m.fullName}</td>
+      <td><span style="color:var(--gold);font-weight:600">${m.memberNumber}</span></td>
+      <td><span style="color:var(--accent);font-weight:600">${m.code}</span></td>
+      <td>${m.phone}</td>
+      <td>${m.passport}</td>
+      <td>${sp?sp.fullName:'—'}</td>
+      <td><span class="pv-tag">${pv.thisMonth}</span></td>
+      <td><span class="pv-tag">${pv.total}</span></td>
+      <td><span class="pv-tag" style="background:rgba(255,208,102,.1);color:var(--gold)">${team.total}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeMember('${m.id}')">Futa</button></td>
+    </tr>`;
+  }).join('');
+  return`<div class="page-title">Wanachama Wote 👥</div>
+  <div id="mem-msg"></div>
+  <div class="table-wrap">
+    <div class="table-head"><div class="table-title">Wanachama (${members.length})</div></div>
+    ${members.length===0?'<div class="empty">Hakuna wanachama bado</div>':`<table><thead><tr><th>Jina</th><th>Namba</th><th>Code</th><th>Simu</th><th>Passport</th><th>Sponsor</th><th>PV Mwezi</th><th>PV Jumla</th><th>PV Team</th><th>Hatua</th></tr></thead><tbody>${rows}</tbody></table>`}
+  </div>`;
+}
+
+function removeMember(id){
+  if(!confirm('Una uhakika unataka kumfuta mwanachama huyu?'))return;
+  DB.saveUsers(DB.getUsers().filter(u=>u.id!==id));
+  DB.savePV(DB.getPV().filter(p=>p.userId!==id));
+  renderPage('members');
+}
+
+function renderAddPV(users,pvRecords){
+  const members=users.filter(u=>u.role!=='admin');
+  const opts=members.map(m=>`<option value="${m.id}">${m.fullName} (${m.memberNumber})</option>`).join('');
+  const history=[...pvRecords].reverse().map(r=>{
+    const u=users.find(u=>u.id===r.userId);
+    return`<tr><td>${u?u.fullName:'—'}</td><td><span class="pv-tag">+${r.amount}</span></td><td>${r.note}</td><td>${new Date(r.date).toLocaleDateString('sw-TZ')}</td></tr>`;
+  }).join('');
+  return`<div class="page-title">Ongeza PV ➕</div>
+  <div class="pv-form">
+    <h3>Jaza PV kwa Mwanachama</h3>
+    <div class="row">
+      <div class="field" style="flex:2"><label>Chagua Mwanachama</label><select id="pv-user"><option value="">-- Chagua --</option>${opts}</select></div>
+      <div class="field"><label>Kiasi cha PV</label><input id="pv-amount" type="number" placeholder="Mfano: 100" /></div>
+    </div>
+    <div class="field"><label>Maelezo (Optional)</label><input id="pv-note" placeholder="Mfano: Mauzo ya Cream" /></div>
+    <div id="pv-preview" style="margin-bottom:10px"></div>
+    <div id="pv-err" class="err hidden"></div>
+    <div id="pv-suc" class="suc hidden"></div>
+    <button class="btn btn-success" style="width:auto;padding:11px 28px" onclick="addPV()">Ongeza PV ✅</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-head"><div class="table-title">Historia ya PV</div></div>
+    ${pvRecords.length===0?'<div class="empty">Hakuna rekodi bado</div>':`<table><thead><tr><th>Mwanachama</th><th>PV</th><th>Maelezo</th><th>Tarehe</th></tr></thead><tbody>${history}</tbody></table>`}
+  </div>`;
+}
+
+function addPV(){
+  hide('pv-err');hide('pv-suc');
+  const userId=document.getElementById('pv-user').value;
+  const amount=Number(document.getElementById('pv-amount').value);
+  const note=document.getElementById('pv-note').value||'PV ya mauzo';
+  if(!userId)return show('pv-err','Chagua mwanachama');
+  if(!amount||amount<=0)return show('pv-err','Weka PV sahihi');
+  const rec={id:Date.now().toString(),userId,amount,note,date:new Date().toISOString(),addedBy:'admin'};
+  DB.savePV([...DB.getPV(),rec]);
+  show('pv-suc',`PV ${amount} imeongezwa kwa mafanikio! ✅`);
+  document.getElementById('pv-amount').value='';
+  document.getElementById('pv-note').value='';
+  document.getElementById('pv-user').value='';
+  setTimeout(()=>renderPage('addpv'),1500);
+}
+
+// ============ INIT ============
+initAdmin();
+const saved=DB.getCurrent();
+if(saved)loadApp(saved);
+</script>
+</body>
+</html>

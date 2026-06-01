@@ -298,11 +298,16 @@ function getDownline(uid,users){
   return all;
 }
 
+function isThisMonth(dateStr){
+  var d=new Date(dateStr);
+  var now=new Date();
+  return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+}
+
 function pvPersonal(uid,pvs){
   var recs=pvs.filter(function(p){return p.user_id===uid;});
   var total=recs.reduce(function(s,p){return s+p.amount;},0);
-  var now=new Date();
-  var month=recs.filter(function(p){var d=new Date(p.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(s,p){return s+p.amount;},0);
+  var month=recs.filter(function(p){return isThisMonth(p.created_at);}).reduce(function(s,p){return s+p.amount;},0);
   return{total:total,month:month};
 }
 
@@ -311,8 +316,7 @@ function pvTeam(uid,users,pvs){
   var ids=[uid].concat(down.map(function(u){return u.id;}));
   var recs=pvs.filter(function(p){return ids.indexOf(p.user_id)>=0;});
   var total=recs.reduce(function(s,p){return s+p.amount;},0);
-  var now=new Date();
-  var month=recs.filter(function(p){var d=new Date(p.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce(function(s,p){return s+p.amount;},0);
+  var month=recs.filter(function(p){return isThisMonth(p.created_at);}).reduce(function(s,p){return s+p.amount;},0);
   return{total:total,month:month,count:down.length};
 }
 
@@ -500,7 +504,11 @@ async function showAddPV(){
   var opts=members.map(function(m){return '<option value="'+m.id+'">'+m.full_name+' ('+m.member_number+')</option>';}).join('');
   var hist=[].concat(pvs).reverse().map(function(r){
     var u=users.find(function(u){return u.id===r.user_id;});
-    return '<tr><td>'+(u?u.full_name:'—')+'</td><td><span class="pv-tag">+'+r.amount+'</span></td><td>'+(r.note||'—')+'</td><td>'+new Date(r.created_at).toLocaleDateString('sw-TZ')+'</td></tr>';
+    var d=new Date(r.created_at);
+    var mth=['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Ago','Sep','Okt','Nov','Des'][d.getMonth()];
+    var isNow=isThisMonth(r.created_at);
+    var mLabel='<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:'+(isNow?'rgba(106,255,212,.15)':'rgba(107,107,138,.15)')+';color:'+(isNow?'var(--accent3)':'var(--muted)')+'">'+mth+' '+d.getFullYear()+'</span>';
+    return '<tr><td>'+(u?u.full_name:'—')+'</td><td><span class="pv-tag">+'+r.amount+'</span></td><td>'+(r.note||'—')+'</td><td>'+mLabel+'</td></tr>';
   }).join('');
   document.getElementById('main-content').innerHTML=
     '<div class="page-title">Ongeza PV ➕</div>'+

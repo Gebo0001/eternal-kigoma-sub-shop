@@ -336,6 +336,7 @@ async function showDashboard(){
   var u=currentUser;
   var pv=pvPersonal(u.id,pvs);
   var team=pvTeam(u.id,users,pvs);
+  var myPVs=pvs.filter(function(p){return p.user_id===u.id;}).reverse();
   document.getElementById('main-content').innerHTML=
   '<div class="page-title">Dashboard 📊</div>'+
   '<div class="section-label" style="margin-bottom:8px">PV Yangu Binafsi</div>'+
@@ -356,7 +357,22 @@ async function showDashboard(){
     '<div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Code Yangu</div><div style="font-weight:600;color:var(--accent)">'+u.code+'</div></div>'+
     '<div><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Simu</div><div style="font-weight:600">'+(u.phone||'—')+'</div></div>'+
   '</div>'+
-  '<div class="info-box">💡 <strong>Code yako: '+u.code+'</strong> — Wape watu wanaotaka kujiunga chini yako</div></div>';
+  '<div class="info-box">💡 <strong>Code yako: '+u.code+'</strong> — Wape watu wanaotaka kujiunga chini yako</div></div>'+
+  '<div class="page-title" style="margin-top:24px;font-size:18px">📋 Historia ya PV Zangu</div>'+
+  '<div class="table-wrap">'+
+    (myPVs.length===0?'<div class="empty">Hakuna PV bado</div>':
+      '<table><thead><tr><th>PV</th><th>Kituo</th><th>Maelezo</th><th>Tarehe Mauzo</th></tr></thead><tbody>'+
+      myPVs.map(function(r){
+        var saleDate=r.sale_date?r.sale_date:r.created_at.split('T')[0];
+        var isNow=isThisMonth(r.created_at);
+        var dLabel='<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:'+(isNow?'rgba(106,255,212,.15)':'rgba(107,107,138,.15)')+';color:'+(isNow?'var(--accent3)':'var(--muted)')+'">'+saleDate+'</span>';
+        return '<tr><td><span class="pv-tag">+'+r.amount+'</span></td>'+
+          '<td><span style="color:var(--gold);font-size:12px">'+( r.kituo||'—')+'</span></td>'+
+          '<td>'+(r.note||'—')+'</td>'+
+          '<td>'+dLabel+'</td></tr>';
+      }).join('')+
+      '</tbody></table>')+
+  '</div>';
 }
 
 // ===== LIST TREE =====
@@ -514,11 +530,14 @@ async function showAddPV(){
   var opts=members.map(function(m){return '<option value="'+m.id+'">'+m.full_name+' ('+m.member_number+')</option>';}).join('');
   var hist=[].concat(pvs).reverse().map(function(r){
     var u=users.find(function(u){return u.id===r.user_id;});
-    var d=new Date(r.created_at);
+    var saleDate=r.sale_date?r.sale_date:r.created_at.split('T')[0];
+    var d=new Date(saleDate);
     var mth=['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Ago','Sep','Okt','Nov','Des'][d.getMonth()];
     var isNow=isThisMonth(r.created_at);
-    var mLabel='<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:'+(isNow?'rgba(106,255,212,.15)':'rgba(107,107,138,.15)')+';color:'+(isNow?'var(--accent3)':'var(--muted)')+'">'+mth+' '+d.getFullYear()+'</span>';
-    return '<tr><td>'+(u?u.full_name:'—')+'</td><td><span class="pv-tag">+'+r.amount+'</span></td><td>'+(r.note||'—')+'</td><td>'+mLabel+'</td></tr>';
+    var mLabel='<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:'+(isNow?'rgba(106,255,212,.15)':'rgba(107,107,138,.15)')+';color:'+(isNow?'var(--accent3)':'var(--muted)')+'">'+saleDate+'</span>';
+    return '<tr><td>'+(u?u.full_name:'—')+'</td><td><span class="pv-tag">+'+r.amount+'</span></td>'+
+      '<td><span style="color:var(--gold);font-size:12px">'+(r.kituo||'—')+'</span></td>'+
+      '<td>'+(r.note||'—')+'</td><td>'+mLabel+'</td></tr>';
   }).join('');
   document.getElementById('main-content').innerHTML=
     '<div class="page-title">Ongeza PV ➕</div>'+
@@ -527,13 +546,17 @@ async function showAddPV(){
       '<div class="field" style="flex:2"><label>Chagua Mwanachama</label><select id="pv-user"><option value="">-- Chagua --</option>'+opts+'</select></div>'+
       '<div class="field"><label>Kiasi cha PV</label><input id="pv-amount" type="number" placeholder="Mfano: 100"/></div>'+
     '</div>'+
+    '<div class="row">'+
+      '<div class="field" style="flex:2"><label>Jina la Kituo (Duka/Mahali)</label><input id="pv-kituo" placeholder="Mfano: Duka la Kigoma, Sokoni"/></div>'+
+      '<div class="field"><label>Tarehe ya Mauzo</label><input id="pv-date" type="date"/></div>'+
+    '</div>'+
     '<div class="field"><label>Maelezo (Optional)</label><input id="pv-note" placeholder="Mfano: Mauzo ya Cream"/></div>'+
     '<div id="pv-err" class="err hidden"></div>'+
     '<div id="pv-suc" class="suc hidden"></div>'+
     '<button class="btn btn-success" style="width:auto;padding:11px 28px" onclick="addPV()">Ongeza PV ✅</button></div>'+
     '<div class="table-wrap"><div class="table-head"><div class="table-title">Historia ya PV</div></div>'+
     (pvs.length===0?'<div class="empty">Hakuna rekodi bado</div>':
-      '<table><thead><tr><th>Mwanachama</th><th>PV</th><th>Maelezo</th><th>Tarehe</th></tr></thead><tbody>'+hist+'</tbody></table>')+
+      '<table><thead><tr><th>Mwanachama</th><th>PV</th><th>Kituo</th><th>Maelezo</th><th>Tarehe Mauzo</th></tr></thead><tbody>'+hist+'</tbody></table>')+
     '</div>';
 }
 
@@ -541,14 +564,20 @@ async function addPV(){
   hideEl('pv-err');hideEl('pv-suc');
   var uid=document.getElementById('pv-user').value;
   var amt=Number(document.getElementById('pv-amount').value);
+  var kituo=document.getElementById('pv-kituo').value.trim();
+  var saleDate=document.getElementById('pv-date').value;
   var note=document.getElementById('pv-note').value||'PV ya mauzo';
   if(!uid)return showEl('pv-err','Chagua mwanachama');
   if(!amt||amt<=0)return showEl('pv-err','Weka PV sahihi');
-  var r=await sb.from('pv_records').insert({user_id:uid,amount:amt,note:note,added_by:'admin'});
+  if(!kituo)return showEl('pv-err','Weka jina la kituo');
+  if(!saleDate)return showEl('pv-err','Weka tarehe ya mauzo');
+  var r=await sb.from('pv_records').insert({user_id:uid,amount:amt,note:note,kituo:kituo,sale_date:saleDate,added_by:'admin'});
   if(r.error)return showEl('pv-err','Hitilafu: '+r.error.message);
   showEl('pv-suc','PV '+amt+' imeongezwa! ✅');
   document.getElementById('pv-amount').value='';
   document.getElementById('pv-note').value='';
+  document.getElementById('pv-kituo').value='';
+  document.getElementById('pv-date').value='';
   document.getElementById('pv-user').value='';
   setTimeout(function(){showAddPV();},1500);
 }

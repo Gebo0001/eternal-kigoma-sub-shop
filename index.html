@@ -262,10 +262,12 @@ function buildNav(){
     {id:'dashboard',icon:'📊',label:'Dashboard'},
     {id:'network',icon:'🌐',label:'Network Yote'},
     {id:'members',icon:'👥',label:'Wanachama'},
-    {id:'addpv',icon:'➕',label:'Ongeza PV'}
+    {id:'addpv',icon:'➕',label:'Ongeza PV'},
+    {id:'password',icon:'🔒',label:'Badilisha Password'}
   ]:[
     {id:'dashboard',icon:'📊',label:'Dashboard'},
-    {id:'team',icon:'🌳',label:'Team Yangu'}
+    {id:'team',icon:'🌳',label:'Team Yangu'},
+    {id:'password',icon:'🔒',label:'Badilisha Password'}
   ];
   document.getElementById('nav-items').innerHTML=navs.map(function(n){
     return '<div class="nav-item '+(n.id===currentPage?'active':'')+'" onclick="renderPage(\''+n.id+'\')" id="nav-'+n.id+'"><span class="nav-icon">'+n.icon+'</span>'+n.label+'</div>';
@@ -283,6 +285,7 @@ async function renderPage(page){
   else if(page==='network')await showNetwork();
   else if(page==='members')await showMembers();
   else if(page==='addpv')await showAddPV();
+  else if(page==='password')showPasswordPage();
 }
 
 async function getAllUsers(){var r=await sb.from('users').select('*').order('created_at');return r.data||[];}
@@ -530,6 +533,47 @@ async function addPV(){
   document.getElementById('pv-note').value='';
   document.getElementById('pv-user').value='';
   setTimeout(function(){showAddPV();},1500);
+}
+
+function showPasswordPage(){
+  document.getElementById('main-content').innerHTML=
+    '<div class="page-title">Badilisha Password 🔒</div>'+
+    '<div class="pv-form" style="max-width:480px">'+
+      '<h3>Weka Password Mpya</h3>'+
+      '<div style="margin-top:16px">'+
+        '<div class="field"><label>Password ya Sasa</label><input type="password" id="pw-old" placeholder="••••••••"/></div>'+
+        '<div class="field"><label>Password Mpya</label><input type="password" id="pw-new" placeholder="••••••••"/></div>'+
+        '<div class="field"><label>Thibitisha Password Mpya</label><input type="password" id="pw-new2" placeholder="••••••••"/></div>'+
+        '<div id="pw-err" class="err hidden"></div>'+
+        '<div id="pw-suc" class="suc hidden"></div>'+
+        '<button class="btn" style="margin-top:8px" onclick="changePassword()">Badilisha Password ✅</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pv-form" style="max-width:480px;margin-top:16px">'+
+      '<h3>Toka kwenye Mfumo</h3>'+
+      '<p style="color:var(--muted);font-size:14px;margin:12px 0">Bonyeza kitufe hapa chini kutoka kwenye akaunti yako salama.</p>'+
+      '<button class="btn btn-danger" style="width:auto;padding:11px 28px" onclick="doLogout()">Toka ↗</button>'+
+    '</div>';
+}
+
+async function changePassword(){
+  hideEl('pw-err');hideEl('pw-suc');
+  var oldPw=document.getElementById('pw-old').value;
+  var newPw=document.getElementById('pw-new').value;
+  var newPw2=document.getElementById('pw-new2').value;
+  if(!oldPw||!newPw||!newPw2)return showEl('pw-err','Jaza sehemu zote');
+  if(oldPw!==currentUser.password)return showEl('pw-err','Password ya sasa si sahihi');
+  if(newPw!==newPw2)return showEl('pw-err','Password mpya hazifanani');
+  if(newPw.length<6)return showEl('pw-err','Password mpya iwe na herufi 6+');
+  if(newPw===oldPw)return showEl('pw-err','Password mpya iwe tofauti na ya sasa');
+  var r=await sb.from('users').update({password:newPw}).eq('id',currentUser.id);
+  if(r.error)return showEl('pw-err','Hitilafu: '+r.error.message);
+  currentUser.password=newPw;
+  sessionStorage.setItem('mlm_u',JSON.stringify(currentUser));
+  showEl('pw-suc','Password imebadilishwa! ✅');
+  document.getElementById('pw-old').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-new2').value='';
 }
 
 async function init(){

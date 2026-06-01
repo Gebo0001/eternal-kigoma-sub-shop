@@ -299,9 +299,19 @@ function getDownline(uid,users){
 }
 
 function isThisMonth(dateStr){
+  if(!dateStr)return false;
   var d=new Date(dateStr);
   var now=new Date();
-  return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+  // Tumia mwaka na mwezi wa Tanzania (UTC+3)
+  var dTZ=new Date(d.getTime()+(3*60*60*1000));
+  var nTZ=new Date(now.getTime()+(3*60*60*1000));
+  return dTZ.getUTCFullYear()===nTZ.getUTCFullYear()&&dTZ.getUTCMonth()===nTZ.getUTCMonth();
+}
+
+function getMonthYear(dateStr){
+  var d=new Date(dateStr);
+  var dTZ=new Date(d.getTime()+(3*60*60*1000));
+  return{month:dTZ.getUTCMonth(),year:dTZ.getUTCFullYear()};
 }
 
 function pvPersonal(uid,pvs){

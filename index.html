@@ -164,7 +164,7 @@ tr:hover td{background:var(--surface2)}
         <div class="ucode" id="sb-code"></div>
         <div class="urole" id="sb-role"></div>
       </div>
-      <button class="btn btn-outline" style="width:100%;padding:9px;font-size:13px" onclick="doLogout()">Toka</button>
+      <button class="btn btn-danger" style="width:100%;padding:9px;font-size:13px;margin-top:4px" onclick="confirmLogout()">↗ Toka</button>
     </div>
   </div>
   <div class="main" id="main-content"></div>
@@ -244,6 +244,10 @@ async function doRegister(){
 }
 
 function doLogout(){sessionStorage.removeItem('mlm_u');currentUser=null;location.reload();}
+
+function confirmLogout(){
+  if(confirm('Una uhakika unataka kutoka?')){doLogout();}
+}
 
 function loadApp(user){
   currentUser=user;

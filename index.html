@@ -527,7 +527,8 @@ async function showAddPV(){
   var users=await getAllUsers();
   var pvs=await getAllPV();
   var members=users.filter(function(u){return u.role!=='admin';});
-  var opts=members.map(function(m){return '<option value="'+m.id+'">'+m.full_name+' ('+m.member_number+')</option>';}).join('');
+  var allForPV=[currentUser].concat(members.filter(function(u){return u.id!==currentUser.id;}));
+  var opts=allForPV.map(function(m){return '<option value="'+m.id+'">'+m.full_name+(m.id===currentUser.id?' (Mimi)':'')+' ('+m.member_number+')</option>';}).join('');
   var hist=[].concat(pvs).reverse().map(function(r){
     var u=users.find(function(u){return u.id===r.user_id;});
     var saleDate=r.sale_date?r.sale_date:r.created_at.split('T')[0];

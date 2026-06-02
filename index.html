@@ -271,6 +271,8 @@ function buildNav(){
   ]:[
     {id:'dashboard',icon:'📊',label:'Dashboard'},
     {id:'team',icon:'🌳',label:'Team Yangu'},
+    {id:'myteam',icon:'👥',label:'Wanachama Wangu'},
+    {id:'mypv',icon:'➕',label:'Jaza PV ya Team'},
     {id:'password',icon:'🔒',label:'Badilisha Password'}
   ];
   document.getElementById('nav-items').innerHTML=navs.map(function(n){
@@ -289,6 +291,8 @@ async function renderPage(page){
   else if(page==='network')await showNetwork();
   else if(page==='members')await showMembers();
   else if(page==='addpv')await showAddPV();
+  else if(page==='myteam')await showMyTeamMembers();
+  else if(page==='mypv')await showMyTeamPV();
   else if(page==='password')showPasswordPage();
 }
 
@@ -585,6 +589,110 @@ async function addPV(){
   document.getElementById('pv-date').value='';
   document.getElementById('pv-user').value='';
   setTimeout(function(){showAddPV();},1500);
+}
+
+async function showMyTeamMembers(){
+  var users=await getAllUsers();
+  var pvs=await getAllPV();
+  var myDownline=getDownline(currentUser.id,users);
+  var rows=myDownline.map(function(m){
+    var pv=pvPersonal(m.id,pvs);
+    var team=pvTeam(m.id,users,pvs);
+    var sp=users.find(function(u){return u.code===m.sponsor_code;});
+    return '<tr>'+
+      '<td>'+m.full_name+'</td>'+
+      '<td><span style="color:var(--gold);font-weight:600">'+m.member_number+'</span></td>'+
+      '<td><span style="color:var(--accent);font-weight:600">'+m.code+'</span></td>'+
+      '<td>'+(m.phone||'—')+'</td>'+
+      '<td>'+(m.passport||'—')+'</td>'+
+      '<td>'+(sp?sp.full_name:'—')+'</td>'+
+      '<td><span class="pv-tag">'+pv.month+'</span></td>'+
+      '<td><span class="pv-tag">'+pv.total+'</span></td>'+
+      '<td><span class="pv-tag" style="background:rgba(255,208,102,.1);color:var(--gold)">'+team.total+'</span></td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('main-content').innerHTML=
+    '<div class="page-title">Wanachama Wangu 👥</div>'+
+    '<div class="table-wrap">'+
+      '<div class="table-head"><div class="table-title">Wanachama ('+myDownline.length+')</div></div>'+
+      (myDownline.length===0?'<div class="empty">Huna wanachama bado — wape watu code yako: <strong style="color:var(--accent)">'+currentUser.code+'</strong></div>':
+        '<table><thead><tr><th>Jina</th><th>Namba</th><th>Code</th><th>Simu</th><th>Passport</th><th>Sponsor</th><th>PV Mwezi</th><th>PV Jumla</th><th>PV Team</th></tr></thead><tbody>'+rows+'</tbody></table>')+
+    '</div>';
+}
+
+async function showMyTeamPV(){
+  var users=await getAllUsers();
+  var pvs=await getAllPV();
+  var myDownline=getDownline(currentUser.id,users);
+  var allForPV=[currentUser].concat(myDownline);
+  var opts=allForPV.map(function(m){
+    return '<option value="'+m.id+'">'+m.full_name+(m.id===currentUser.id?' (Mimi)':'')+' ('+m.member_number+')</option>';
+  }).join('');
+  var myPVRecs=pvs.filter(function(p){
+    var ids=allForPV.map(function(u){return u.id;});
+    return ids.indexOf(p.user_id)>=0;
+  }).reverse();
+  var hist=myPVRecs.map(function(r){
+    var u=users.find(function(u){return u.id===r.user_id;});
+    var saleDate=r.sale_date?r.sale_date:r.created_at.split('T')[0];
+    var isNow=isThisMonth(r.created_at);
+    var dLabel='<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:'+(isNow?'rgba(106,255,212,.15)':'rgba(107,107,138,.15)')+';color:'+(isNow?'var(--accent3)':'var(--muted)')+'">'+saleDate+'</span>';
+    return '<tr>'+
+      '<td>'+(u?u.full_name:'—')+'</td>'+
+      '<td><span class="pv-tag">+'+r.amount+'</span></td>'+
+      '<td><span style="color:var(--gold);font-size:12px">'+(r.kituo||'—')+'</span></td>'+
+      '<td>'+(r.note||'—')+'</td>'+
+      '<td>'+dLabel+'</td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('main-content').innerHTML=
+    '<div class="page-title">Jaza PV ya Team ➕</div>'+
+    '<div class="pv-form"><h3>Jaza PV kwa Mwanachama wa Team Yako</h3>'+
+      '<div class="row">'+
+        '<div class="field" style="flex:2"><label>Chagua Mwanachama</label><select id="mpv-user"><option value="">-- Chagua --</option>'+opts+'</select></div>'+
+        '<div class="field"><label>Kiasi cha PV</label><input id="mpv-amount" type="number" placeholder="Mfano: 100"/></div>'+
+      '</div>'+
+      '<div class="row">'+
+        '<div class="field" style="flex:2"><label>Jina la Kituo</label><input id="mpv-kituo" placeholder="Mfano: Duka la Kigoma"/></div>'+
+        '<div class="field"><label>Tarehe ya Mauzo</label><input id="mpv-date" type="date"/></div>'+
+      '</div>'+
+      '<div class="field"><label>Maelezo (Optional)</label><input id="mpv-note" placeholder="Mfano: Mauzo ya Cream"/></div>'+
+      '<div id="mpv-err" class="err hidden"></div>'+
+      '<div id="mpv-suc" class="suc hidden"></div>'+
+      '<button class="btn btn-success" style="width:auto;padding:11px 28px" onclick="addMyTeamPV()">Ongeza PV ✅</button>'+
+    '</div>'+
+    '<div class="table-wrap">'+
+      '<div class="table-head"><div class="table-title">Historia ya PV ya Team</div></div>'+
+      (myPVRecs.length===0?'<div class="empty">Hakuna rekodi bado</div>':
+        '<table><thead><tr><th>Mwanachama</th><th>PV</th><th>Kituo</th><th>Maelezo</th><th>Tarehe</th></tr></thead><tbody>'+hist+'</tbody></table>')+
+    '</div>';
+}
+
+async function addMyTeamPV(){
+  hideEl('mpv-err');hideEl('mpv-suc');
+  var uid=document.getElementById('mpv-user').value;
+  var amt=Number(document.getElementById('mpv-amount').value);
+  var kituo=document.getElementById('mpv-kituo').value.trim();
+  var saleDate=document.getElementById('mpv-date').value;
+  var note=document.getElementById('mpv-note').value||'PV ya mauzo';
+  if(!uid)return showEl('mpv-err','Chagua mwanachama');
+  if(!amt||amt<=0)return showEl('mpv-err','Weka PV sahihi');
+  if(!kituo)return showEl('mpv-err','Weka jina la kituo');
+  if(!saleDate)return showEl('mpv-err','Weka tarehe ya mauzo');
+  // Verify user is in my downline or is me
+  var users=await getAllUsers();
+  var myDownline=getDownline(currentUser.id,users);
+  var allowed=[currentUser.id].concat(myDownline.map(function(u){return u.id;}));
+  if(allowed.indexOf(uid)<0)return showEl('mpv-err','Mwanachama huyu si wa team yako');
+  var r=await sb.from('pv_records').insert({user_id:uid,amount:amt,note:note,kituo:kituo,sale_date:saleDate,added_by:currentUser.member_number});
+  if(r.error)return showEl('mpv-err','Hitilafu: '+r.error.message);
+  showEl('mpv-suc','PV '+amt+' imeongezwa! ✅');
+  document.getElementById('mpv-amount').value='';
+  document.getElementById('mpv-note').value='';
+  document.getElementById('mpv-kituo').value='';
+  document.getElementById('mpv-date').value='';
+  document.getElementById('mpv-user').value='';
+  setTimeout(function(){showMyTeamPV();},1500);
 }
 
 function showPasswordPage(){

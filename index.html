@@ -412,46 +412,98 @@ function buildListNode(user,users,pvs,depth){
 function toggleL(id){var el=document.getElementById(id);if(el)el.classList.toggle('hidden');}
 
 // ===== CIRCLE TREE =====
-function buildCircleNode(user,users,pvs,depth){
-  var pv=pvPersonal(user.id,pvs);
-  var team=pvTeam(user.id,users,pvs);
-  var children=users.filter(function(u){var s=users.find(function(s){return s.code===u.sponsor_code;});return s&&s.id===user.id;});
-  var init=user.full_name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase();
-  var isSelf=user.id===currentUser.id;
-  var isAdmin=user.role==='admin';
-  var uid='c'+user.id.replace(/-/g,'').substring(0,8);
-  var cls='ccircle'+(isSelf?' cself':'')+(isAdmin?' cadmin':'');
+function renderSVGTree(rootUser, users, pvs, containerId){
+  var R=36, LH=160, GAP=40, NW=100;
 
-  var childrenHTML='';
-  if(children.length){
-    var lineW=Math.max(children.length*90,90);
-    childrenHTML='<div class="cvert"></div>'+
-      (children.length>1?'<div class="choriz" style="width:'+lineW+'px"></div>':'')+
-      '<div class="cbranch-wrap" id="cb-'+uid+'">'+
-        children.map(function(c){
-          return '<div class="cbranch"><div class="cvert"></div>'+buildCircleNode(c,users,pvs,depth+1)+'</div>';
-        }).join('')+
-      '</div>';
+  function getChildren(uid){
+    return users.filter(function(u){
+      var s=users.find(function(s){return s.code===u.sponsor_code;});
+      return s&&s.id===uid;
+    });
   }
 
-  var toggleBtn=children.length?'<div style="margin-top:4px"><button onclick="toggleC(\'cb-'+uid+'\')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:10px;cursor:pointer;color:var(--muted)">'+( depth<2?'▲':'▼ '+children.length)+'</button></div>':'';
+  function treeW(uid){
+    var ch=getChildren(uid);
+    if(!ch.length)return NW;
+    var tot=0;
+    ch.forEach(function(c){tot+=treeW(c.id)+GAP;});
+    return Math.max(tot-GAP,NW);
+  }
 
-  return '<div class="cnode">'+
-    '<div class="'+cls+'" onclick="togglePop(\'pop-'+uid+'\')" onmouseleave="hidePop(\'pop-'+uid+'\')">'+
-      init+
-      '<div class="cpopup" id="pop-'+uid+'">'+
-        '<div style="color:var(--gold);font-weight:700;margin-bottom:4px">'+user.full_name+'</div>'+
-        '<div>PV Mwezi: <strong style="color:#7c6aff">'+pv.month+'</strong></div>'+
-        '<div>PV Jumla: <strong style="color:#6affd4">'+pv.total+'</strong></div>'+
-        '<div>PV Team: <strong style="color:#ffd066">'+team.total+'</strong></div>'+
-        '<div>Wanachama: <strong style="color:#fff">'+team.count+'</strong></div>'+
+  var nodes=[],lines=[];
+
+  function build(uid,cx,cy){
+    var user=users.find(function(u){return u.id===uid;});
+    if(!user)return;
+    var pv=pvPersonal(uid,pvs);
+    var team=pvTeam(uid,users,pvs);
+    nodes.push({user:user,cx:cx,cy:cy,pv:pv,team:team,isSelf:uid===currentUser.id,isAdmin:user.role==='admin'});
+    var ch=getChildren(uid);
+    if(!ch.length)return;
+    var widths=ch.map(function(c){return treeW(c.id);});
+    var totalW=widths.reduce(function(s,w){return s+w+GAP;},0)-GAP;
+    var sx=cx-totalW/2;
+    ch.forEach(function(c,i){
+      var ccx=sx+widths[i]/2;
+      var ccy=cy+LH;
+      lines.push({x1:cx,y1:cy+R,x2:ccx,y2:ccy-R});
+      build(c.id,ccx,ccy);
+      sx+=widths[i]+GAP;
+    });
+  }
+
+  var rw=treeW(rootUser.id);
+  var startCX=Math.max(rw/2+80,350);
+  build(rootUser.id,startCX,70);
+
+  var maxX=nodes.reduce(function(m,n){return Math.max(m,n.cx+R+80);},0);
+  var maxY=nodes.reduce(function(m,n){return Math.max(m,n.cy+R+90);},0);
+  var W=Math.max(maxX+80,500), H=Math.max(maxY+60,300);
+
+  var svgL=lines.map(function(l){
+    return '<path d="M'+l.x1+','+l.y1+' C'+l.x1+','+(l.y1+50)+' '+l.x2+','+(l.y2-50)+' '+l.x2+','+l.y2+'" fill="none" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/>';
+  }).join('');
+
+  var nodesH=nodes.map(function(n){
+    var init=n.user.full_name.split(' ').map(function(x){return x[0];}).join('').substring(0,2).toUpperCase();
+    var uid='sv'+n.user.id.replace(/-/g,'').substring(0,8);
+    var bc=n.isAdmin?'#ffd066':n.isSelf?'#6affd4':'rgba(124,106,255,.6)';
+    var glow=n.isAdmin?'rgba(255,208,102,.5)':n.isSelf?'rgba(106,255,212,.4)':'rgba(124,106,255,.3)';
+    var nm=n.user.full_name.length>13?n.user.full_name.substring(0,13)+'...':n.user.full_name;
+    return '<div style="position:absolute;left:'+(n.cx-R)+'px;top:'+(n.cy-R)+'px;display:flex;flex-direction:column;align-items:center;width:'+(R*2)+'px">'+
+      '<div style="width:'+(R*2)+'px;height:'+(R*2)+'px;border-radius:50%;background:linear-gradient(135deg,#7c6aff,#ff6a9b);display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:18px;color:#fff;border:3px solid '+bc+';box-shadow:0 4px 20px '+glow+';cursor:pointer;position:relative;transition:transform .2s"'+
+        ' onclick="togglePop(''+uid+'')"'+
+        ' onmouseover="this.style.transform='scale(1.12)'"'+
+        ' onmouseout="this.style.transform='scale(1)';hidePop(''+uid+'')"'+
+      '>'+init+
+        '<div class="cpopup" id="'+uid+'">'+
+          '<div style="color:var(--gold);font-weight:700;margin-bottom:5px">'+n.user.full_name+(n.isAdmin?' 👑':n.isSelf?' 👤':'')+'</div>'+
+          '<div>📅 PV Mwezi: <strong style="color:#7c6aff">'+n.pv.month+'</strong></div>'+
+          '<div>📊 PV Jumla: <strong style="color:#6affd4">'+n.pv.total+'</strong></div>'+
+          '<div>🌳 PV Team: <strong style="color:#ffd066">'+n.team.total+'</strong></div>'+
+          '<div>👥 Wanachama: <strong style="color:#fff">'+n.team.count+'</strong></div>'+
+        '</div>'+
       '</div>'+
-    '</div>'+
-    '<div class="clabel"><div class="clabel-name">'+user.full_name+(isAdmin?' 👑':'')+'</div><div class="clabel-id">'+user.member_number+'</div></div>'+
-    toggleBtn+childrenHTML+'</div>';
+      '<div style="margin-top:7px;text-align:center;width:90px">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+nm+'</div>'+
+        '<div style="font-size:10px;color:var(--accent);margin-top:2px">'+n.user.member_number+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  var cont=document.getElementById(containerId);
+  if(!cont)return;
+  cont.innerHTML='<div style="overflow:auto;padding:8px"><div style="position:relative;width:'+W+'px;height:'+H+'px;min-width:320px">'+
+    '<svg style="position:absolute;top:0;left:0;width:'+W+'px;height:'+H+'px;overflow:visible">'+
+      '<defs><linearGradient id="lg" x1="0%" y1="0%" x2="0%" y2="100%">'+
+        '<stop offset="0%" style="stop-color:#7c6aff;stop-opacity:0.9"/>'+
+        '<stop offset="100%" style="stop-color:#ff6a9b;stop-opacity:0.9"/>'+
+      '</linearGradient></defs>'+svgL+
+    '</svg>'+nodesH+'</div></div>';
 }
 
 function togglePop(id){var el=document.getElementById(id);if(el)el.classList.toggle('show');}
+function hidePop(id){var el=document.getElementById(id);if(el)el.classList.remove('show');}
 function hidePop(id){var el=document.getElementById(id);if(el)el.classList.remove('show');}
 function toggleC(id){var el=document.getElementById(id);if(el)el.classList.toggle('hidden');}
 
@@ -464,10 +516,11 @@ async function showTeam(){
     '<div class="page-title">Team Yangu 🌳</div>'+
     '<div class="view-btns">'+
       '<button class="view-btn active" id="tbtn-list" onclick="switchView(\'team\',\'list\')">📋 Orodha</button>'+
-      '<button class="view-btn" id="tbtn-circle" onclick="switchView(\'team\',\'circle\')">🌳 Mchoro wa Duara</button>'+
+      '<button class="view-btn" id="tbtn-tree" onclick="switchView(\'team\',\'tree\')">🌳 Mchoro wa Matawi</button>'+
     '</div>'+
     '<div id="team-list"><div class="tree-wrap">'+buildListNode(me,users,pvs,0)+'</div></div>'+
-    '<div id="team-circle" class="hidden"><div class="ctree-wrap"><div class="ctree">'+buildCircleNode(me,users,pvs,0)+'</div></div></div>';
+    '<div id="team-circle" class="hidden"><div class="ctree-wrap" id="svg-team"></div></div>';
+  renderSVGTree(me,users,pvs,'svg-team');
 }
 
 async function showNetwork(){
@@ -478,23 +531,24 @@ async function showNetwork(){
     '<div class="page-title">Network Yote 🌐</div>'+
     '<div class="view-btns">'+
       '<button class="view-btn active" id="nbtn-list" onclick="switchView(\'net\',\'list\')">📋 Orodha</button>'+
-      '<button class="view-btn" id="nbtn-circle" onclick="switchView(\'net\',\'circle\')">🌳 Mchoro wa Duara</button>'+
+      '<button class="view-btn" id="nbtn-tree" onclick="switchView(\'net\',\'tree\')">🌳 Mchoro wa Matawi</button>'+
     '</div>'+
     '<div id="net-list"><div class="tree-wrap">'+(admin?buildListNode(admin,users,pvs,0):'<div class="empty">Hakuna data</div>')+'</div></div>'+
-    '<div id="net-circle" class="hidden"><div class="ctree-wrap"><div class="ctree">'+(admin?buildCircleNode(admin,users,pvs,0):'<div class="empty">Hakuna data</div>')+'</div></div></div>';
+    '<div id="net-tree" class="hidden"><div class="ctree-wrap" id="svg-net"></div></div>';
+  if(admin)renderSVGTree(admin,users,pvs,'svg-net');
 }
 
 function switchView(page,view){
   if(page==='team'){
     document.getElementById('team-list').classList.toggle('hidden',view!=='list');
-    document.getElementById('team-circle').classList.toggle('hidden',view!=='circle');
+    document.getElementById('team-tree').classList.toggle('hidden',view!=='tree');
     document.getElementById('tbtn-list').classList.toggle('active',view==='list');
-    document.getElementById('tbtn-circle').classList.toggle('active',view==='circle');
+    document.getElementById('tbtn-tree').classList.toggle('active',view==='tree');
   } else {
     document.getElementById('net-list').classList.toggle('hidden',view!=='list');
-    document.getElementById('net-circle').classList.toggle('hidden',view!=='circle');
+    document.getElementById('net-tree').classList.toggle('hidden',view!=='tree');
     document.getElementById('nbtn-list').classList.toggle('active',view==='list');
-    document.getElementById('nbtn-circle').classList.toggle('active',view==='circle');
+    document.getElementById('nbtn-tree').classList.toggle('active',view==='tree');
   }
 }
 

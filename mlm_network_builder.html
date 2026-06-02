@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mfumo wa MLM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c26;
+      --border: rgba(255,255,255,0.08);
+      --accent: #7c5cfc;
+      --accent2: #00e5c8;
+      --danger: #ff4d6d;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --tier0: #7c5cfc;
+      --tier1: #00e5c8;
+      --tier2: #ff9f43;
+      --tier3: #ff4d6d;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stats {
+      display: flex;
+      gap: 24px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Sidebar */
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    input, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    select option {
+      background: var(--surface2);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      transition: all 0.2s;
+      width: 100%;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #6a4de0;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255,77,109,0.1);
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .member-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .member-item:hover {
+      border-color: var(--accent);
+    }
+
+    .member-item.selected {
+      border-color: var(--accent);
+      background: rgba(124,92,252,0.1);
+    }
+
+    .member-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-right: 8px;
+    }
+
+    .member-name {
+      flex: 1;
+      font-weight: 600;
+    }
+
+    .member-tier {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .del-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 4px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .del-btn:hover { color: var(--danger); }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Canvas area */
+    main {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(124,92,252,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0,229,200,0.04) 0%, transparent 50%);
+    }
+
+    #canvas-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .node-group { cursor: pointer; }
+
+    .node-circle {
+      transition: r 0.2s, filter 0.2s;
+    }
+
+    .node-group:hover .node-circle {
+      filter: brightness(1.2);
+    }
+
+    .edge-line {
+      pointer-events: none;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 10;
+    }
+
+    .tooltip.show { opacity: 1; }
+
+    .empty-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .empty-hint p { font-size: 13px; margin-top: 8px; }
+    .empty-hint .big { font-size: 40px; margin-bottom: 8px; }
+
+    .divider { height: 1px; background: var(--border); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Mjenzi wa MLM</h1>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value" id="total-count">0</div>
+      <div class="stat-label">Wanachama</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="tier-count">0</div>
+      <div class="stat-label">Ngazi</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="total-edges">0</div>
+      <div class="stat-label">Miunganiko</div>
+    </div>
+  </div>
+</header>
+
+<aside>
+  <div>
+    <p class="panel-title">Ongeza Mwanachama</p>
+    <div class="form-group">
+      <label>Jina</label>
+      <input type="text" id="name-input" placeholder="Jina la mwanachama" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label>Sponsor (Mleta)</label>
+      <select id="sponsor-select">
+        <option value="">-- Hakuna (Kiongozi) --</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="addMember()">+ Ongeza Mwanachama</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div>
+    <p class="panel-title">Wanachama (<span id="list-count">0</span>)</p>
+    <div class="member-list" id="member-list"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div>
+    <p class="panel-title">Vitendo</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-secondary" onclick="resetNetwork()">Anza Upya</button>
+      <button class="btn btn-secondary" onclick="loadExample()">Pakia Mfano</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div>
+    <p class="panel-title">Rangi za Ngazi</p>
+    <div class="legend" id="legend"></div>
+  </div>
+</aside>
+
+<main id="canvas-container">
+  <div class="empty-hint" id="empty-hint">
+    <div class="big">🌐</div>
+    <p>Ongeza wanachama kuanza kujenga mtandao wako</p>
+  </div>
+  <svg id="canvas-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="tooltip" id="tooltip"></div>
+</main>
+
+<script>
+const TIER_COLORS = ['#7c5cfc','#00e5c8','#ff9f43','#ff4d6d','#a8edea','#c3cfe2'];
+
+let members = [];
+let nextId = 1;
+let selected = null;
+
+function getTierColor(t) {
+  return TIER_COLORS[Math.min(t, TIER_COLORS.length - 1)];
+}
+
+function calcTier(id, map) {
+  const m = map.get(id);
+  if (!m || !m.sponsorId) return 0;
+  return 1 + calcTier(m.sponsorId, map);
+}
+
+function addMember() {
+  const nameInput = document.getElementById('name-input');
+  const sponsorSelect = document.getElementById('sponsor-select');
+  const name = nameInput.value.trim();
+  if (!name) { nameInput.focus(); return; }
+
+  const sponsorId = sponsorSelect.value ? parseInt(sponsorSelect.value) : null;
+  members.push({ id: nextId++, name, sponsorId });
+
+  nameInput.value = '';
+  render();
+}
+
+function removeMember(id) {
+  // remove member and all descendants
+  const toRemove = new Set();
+  function collect(pid) {
+    toRemove.add(pid);
+    members.filter(m => m.sponsorId === pid).forEach(m => collect(m.id));
+  }
+  collect(id);
+  members = members.filter(m => !toRemove.has(m.id));
+  if (selected && toRemove.has(selected)) selected = null;
+  render();
+}
+
+function resetNetwork() {
+  members = [];
+  nextId = 1;
+  selected = null;
+  render();
+}
+
+function loadExample() {
+  members = [];
+  nextId = 1;
+  const data = [
+    {id:1, name:'YOU', sponsorId: null},
+    {id:2, name:'Alice', sponsorId: 1},
+    {id:3, name:'Bob', sponsorId: 1},
+    {id:4, name:'Carol', sponsorId: 1},
+    {id:5, name:'David', sponsorId: 2},
+    {id:6, name:'Eva', sponsorId: 2},
+    {id:7, name:'Frank', sponsorId: 3},
+    {id:8, name:'Grace', sponsorId: 4},
+    {id:9, name:'Henry', sponsorId: 4},
+    {id:10, name:'Irene', sponsorId: 5},
+  ];
+  members = data;
+  nextId = 11;
+  render();
+}
+
+function render() {
+  const map = new Map(members.map(m => [m.id, m]));
+
+  // Assign tiers
+  members.forEach(m => { m.tier = calcTier(m.id, map); });
+
+  // Update selects
+  const sponsorSelect = document.getElementById('sponsor-select');
+  const prevVal = sponsorSelect.value;
+  sponsorSelect.innerHTML = '<option value="">-- Hakuna (Kiongozi) --</option>';
+  members.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.name + ' (Ngazi ' + m.tier + ')';
+    sponsorSelect.appendChild(opt);
+  });
+  if (members.find(m => m.id === parseInt(prevVal))) sponsorSelect.value = prevVal;
+
+  // Update stats
+  const maxTier = members.length ? Math.max(...members.map(m => m.tier)) + 1 : 0;
+  document.getElementById('total-count').textContent = members.length;
+  document.getElementById('tier-count').textContent = maxTier;
+  document.getElementById('total-edges').textContent = members.filter(m => m.sponsorId).length;
+  document.getElementById('list-count').textContent = members.length;
+
+  // Member list
+  const list = document.getElementById('member-list');
+  list.innerHTML = '';
+  members.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'member-item' + (selected === m.id ? ' selected' : '');
+    item.onclick = () => { selected = selected === m.id ? null : m.id; render(); };
+    item.innerHTML = `
+      <div class="member-dot" style="background:${getTierColor(m.tier)}"></div>
+      <span class="member-name">${m.name}</span>
+      <span class="member-tier">N${m.tier}</span>
+      <button class="del-btn" onclick="event.stopPropagation();removeMember(${m.id})">×</button>
+    `;
+    list.appendChild(item);
+  });
+
+  // Legend
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  const usedTiers = [...new Set(members.map(m => m.tier))].sort();
+  usedTiers.forEach(t => {
+    legend.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${getTierColor(t)}"></div>
+        <span>Ngazi ${t}${t===0?' (Kiongozi)':''}</span>
+      </div>`;
+  });
+
+  // Empty hint
+  document.getElementById('empty-hint').style.display = members.length ? 'none' : 'block';
+
+  // Draw SVG
+  drawSVG(map);
+}
+
+function drawSVG(map) {
+  const svg = document.getElementById('canvas-svg');
+  const W = svg.clientWidth || 800;
+  const H = svg.clientHeight || 600;
+  svg.innerHTML = '';
+
+  if (!members.length) return;
+
+  // Group by tier
+  const byTier = {};
+  members.forEach(m => {
+    if (!byTier[m.tier]) byTier[m.tier] = [];
+    byTier[m.tier].push(m);
+  });
+
+  const tiers = Object.keys(byTier).map(Number).sort();
+  const R = Math.max(20, Math.min(34, W / (members.length * 2.5)));
+  const tierH = Math.min(120, (H - 80) / (tiers.length || 1));
+
+  // Assign positions
+  const positions = {};
+  tiers.forEach((t, ti) => {
+    const group = byTier[t];
+    const y = 60 + ti * tierH + tierH / 2;
+    group.forEach((m, i) => {
+      const x = (W / (group.length + 1)) * (i + 1);
+      positions[m.id] = { x, y };
+    });
+  });
+
+  // Draw edges
+  members.filter(m => m.sponsorId && positions[m.sponsorId]).forEach(m => {
+    const from = positions[m.sponsorId];
+    const to = positions[m.id];
+    const isHighlighted = selected && (m.id === selected || m.sponsorId === selected);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', from.x);
+    line.setAttribute('y1', from.y);
+    line.setAttribute('x2', to.x);
+    line.setAttribute('y2', to.y);
+    line.setAttribute('stroke', isHighlighted ? getTierColor(m.tier) : 'rgba(255,255,255,0.1)');
+    line.setAttribute('stroke-width', isHighlighted ? '2' : '1');
+    line.setAttribute('class', 'edge-line');
+    if (!isHighlighted) line.setAttribute('stroke-dasharray', '4 4');
+    svg.appendChild(line);
+  });
+
+  // Draw nodes
+  members.forEach(m => {
+    const pos = positions[m.id];
+    const color = getTierColor(m.tier);
+    const isSelected = selected === m.id;
+    const children = members.filter(x => x.sponsorId === m.id).length;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class', 'node-group');
+    g.style.cursor = 'pointer';
+
+    // Outer glow ring if selected
+    if (isSelected) {
+      const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      glow.setAttribute('cx', pos.x);
+      glow.setAttribute('cy', pos.y);
+      glow.setAttribute('r', R + 8);
+      glow.setAttribute('fill', 'none');
+      glow.setAttribute('stroke', color);
+      glow.setAttribute('stroke-width', '1.5');
+      glow.setAttribute('opacity', '0.4');
+      g.appendChild(glow);
+    }
+
+    // Circle
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', pos.x);
+    circle.setAttribute('cy', pos.y);
+    circle.setAttribute('r', R);
+    circle.setAttribute('fill', isSelected ? color : color + '22');
+    circle.setAttribute('stroke', color);
+    circle.setAttribute('stroke-width', isSelected ? '2.5' : '1.5');
+    circle.setAttribute('class', 'node-circle');
+    g.appendChild(circle);
+
+    // Label
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', pos.x);
+    text.setAttribute('y', pos.y + 1);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.setAttribute('fill', isSelected ? '#fff' : color);
+    text.setAttribute('font-size', Math.max(9, Math.min(13, R * 0.55)));
+    text.setAttribute('font-family', 'Syne, sans-serif');
+    text.setAttribute('font-weight', '700');
+    const shortName = m.name.length > 6 ? m.name.slice(0,5)+'…' : m.name;
+    text.textContent = shortName;
+    g.appendChild(text);
+
+    // Child count badge
+    if (children > 0) {
+      const bx = pos.x + R * 0.7;
+      const by = pos.y - R * 0.7;
+      const badge = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      badge.setAttribute('cx', bx);
+      badge.setAttribute('cy', by);
+      badge.setAttribute('r', 9);
+      badge.setAttribute('fill', '#0a0a0f');
+      badge.setAttribute('stroke', color);
+      badge.setAttribute('stroke-width', '1');
+      g.appendChild(badge);
+
+      const bt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      bt.setAttribute('x', bx);
+      bt.setAttribute('y', by + 1);
+      bt.setAttribute('text-anchor', 'middle');
+      bt.setAttribute('dominant-baseline', 'central');
+      bt.setAttribute('fill', color);
+      bt.setAttribute('font-size', '9');
+      bt.setAttribute('font-family', 'Space Mono, monospace');
+      bt.setAttribute('font-weight', '700');
+      bt.textContent = children;
+      g.appendChild(bt);
+    }
+
+    g.addEventListener('click', () => {
+      selected = selected === m.id ? null : m.id;
+      render();
+    });
+
+    // Tooltip
+    const tooltip = document.getElementById('tooltip');
+    g.addEventListener('mouseenter', (e) => {
+      const sponsor = m.sponsorId ? map.get(m.sponsorId)?.name : 'Hakuna';
+      tooltip.innerHTML = `<b>${m.name}</b> · Ngazi ${m.tier}<br>Sponsor: ${sponsor}<br>Wafuasi: ${children}`;
+      tooltip.classList.add('show');
+    });
+    g.addEventListener('mousemove', (e) => {
+      const rect = document.getElementById('canvas-container').getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - rect.top + 12) + 'px';
+    });
+    g.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+
+    svg.appendChild(g);
+  });
+}
+
+// Re-render on resize
+window.addEventListener('resize', () => render());
+
+// Allow Enter key to add member
+document.getElementById('name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addMember();
+});
+
+// Initialize with YOU
+members.push({id: nextId++, name: 'YOU', sponsorId: null});
+render();
+</script>
+</body>
+</html>

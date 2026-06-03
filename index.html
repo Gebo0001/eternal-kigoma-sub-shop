@@ -173,7 +173,10 @@ tr:hover td{background:var(--surface2)}
 <script>
 var SURL='https://wrnlrceicubeafagmpjs.supabase.co';
 var SKEY='sb_publishable_fINfr0H44Dh0GNNW3Hh4WA_LlejHvrx';
-var sb=supabase.createClient(SURL,SKEY);
+var sb=supabase.createClient(SURL,SKEY,{
+  auth:{persistSession:false},
+  global:{headers:{'apikey':SKEY}}
+});
 var currentUser=null;
 var currentPage='dashboard';
 
@@ -182,16 +185,29 @@ function genCode(n){return n.substring(0,3).toUpperCase()+Math.random().toString
 async function setupDB(){
   try{
     var r=await sb.from('users').select('id').eq('role','admin').limit(1);
-    if(r.error){showSetup();return false;}
+    if(r.error){
+      console.log('DB Error:',r.error.message);
+      showSetup();
+      return false;
+    }
     if(!r.data||r.data.length===0){
       await sb.from('users').insert({full_name:'Mr. Gebo',member_number:'1214387',password:'admin123',phone:'0672949116',passport:'ADMIN001',code:'GEBO0001',sponsor_code:null,role:'admin'});
     }
     return true;
-  }catch(e){showSetup();return false;}
+  }catch(e){
+    console.log('Setup error:',e);
+    showSetup();
+    return false;
+  }
 }
 
 function showSetup(){
-  document.getElementById('loading-screen').innerHTML='<div style="max-width:500px;padding:32px;text-align:center"><div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:var(--accent);margin-bottom:16px">Tatizo la Database</div><div style="color:var(--muted);font-size:14px">Nenda Supabase SQL Editor na run SQL ya awali tena.</div></div>';
+  document.getElementById('loading-screen').innerHTML=
+    '<div style="max-width:500px;padding:32px;text-align:center">'+
+    '<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:var(--accent);margin-bottom:16px">Tatizo la Muunganiko ⚠️</div>'+
+    '<div style="color:var(--muted);font-size:14px;margin-bottom:20px">Mfumo hauwezi kuunganika na database. Jaribu tena.</div>'+
+    '<button onclick="location.reload()" style="background:linear-gradient(135deg,#7c6aff,#ff6a9b);border:none;border-radius:10px;padding:12px 28px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">🔄 Jaribu Tena</button>'+
+    '</div>';
 }
 
 function switchTab(t){
